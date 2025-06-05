@@ -1,0 +1,32 @@
+[project]
+name = "BA__Programmierung"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+authors = [{ name = "Marten Windler", email = "bachelor-arbeit-lize.annoying157@passmail.net" }]
+license = { text = "The Unlicense" }
+requires-python = ">=3.8"
+dependencies = [
+    "matplotlib",
+    "notebook",
+    "numpy",
+    "pandas",
+    "torch",
+    "scikit-learn",
+    "scipy",
+    "tensorflow",
+    "torchvision",
+]
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["BA__Programmierung"]
+exclude = [
+  "data*",
+  "notebooks*",
+  "scripts*",
+  "tests*",
+]
