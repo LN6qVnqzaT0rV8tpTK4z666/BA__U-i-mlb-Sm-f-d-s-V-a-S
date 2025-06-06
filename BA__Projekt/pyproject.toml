@@ -34,3 +34,8 @@ exclude = [
   "scripts*",
   "tests*",
 ]
+
+[tool.pytest.ini_options]
+env = [
+    "PROJECT_BASE_PATH=/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/"
+]

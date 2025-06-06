@@ -4,6 +4,23 @@ Bachelor-Arbeit: Unsicherheiten in machine-learning-basierten Surrogatmodellen f
 
 ## Initialisieren
 
+Setup unter Windows 11 WSL-2-Ubuntu-24.04.01-LTS.
+
+Umgebungsvariable setzen.
+```bash
+sh scripts/setup__project_base_path.sh
+```
+
+bashrc neu einlesen.
+```bash
+source ~/.bashrc
+```
+
+bashrc manuell inspizieren.
+```bash
+code ~/.bashrc; echo $PROJECT_BASE_PATH
+```
+
 python3, tar, unzip Installation sicherstellen.
 ```bash
 sudo apt install python3 tar unzip 
@@ -34,39 +51,32 @@ deactivate
 rm -rf BA__Programmierung/.venv
 ```
 
-Python-Package-Installation ausführen.
+LOKAL: Python-Package-Installation ausführen.
 ```bash
 pip install .
 ```
 
-Gebautes Paket am Einstiegspunkt main.py ausführen.
+LOKAL: Gebautes Paket am Einstiegspunkt main.py ausführen.
 ```bash
 ba-programmierung
 ```
 
-<!-- 
-1. 🛠️ Baue das Docker-Image: Im Projektverzeichnis (BA__Programmierung/):
-
+DOCKER: Service starten. 
 ```bash
-docker build -t ba-projekt .
+sudo systemctl start docker
 ```
 
-2. ▶️ Starte den Container:
-
+DOCKER: Image bauen.
 ```bash
-docker run -it -p 8888:8888 ba-projekt
+docker build -t ba__projekt .
 ```
 
-3. 🧪 Ergebnis: Sobald der Container läuft, öffne im Browser:
-
+DOCKER: Image ausführen.
 ```bash
-http://localhost:8888
-``` 
-## Struktur
--->
-
+docker run --rm ba__projekt:latest
+```
 
 ## Changelog
-
+- [x] Grundlegend Docker aufsetzen.
 - [x] Grundlegende Datenbankverbindung aufsetzen.
 - [x] Readme grundlegend aufsetzen.

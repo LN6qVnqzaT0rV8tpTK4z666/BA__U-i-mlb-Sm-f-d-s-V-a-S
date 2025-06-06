@@ -1,31 +1,18 @@
-# Basis-Image mit Python
-FROM python:3.10-slim
+# Basis-Image
+FROM python:3.11-slim
 
-# Systemabhängigkeiten installieren (z. B. für opencv oder andere)
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    git \
-    curl \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Arbeitsverzeichnis im Container
+# Arbeitsverzeichnis setzen
 WORKDIR /app
 
-# Projektdateien kopieren
-COPY . .
+# Systempakete (z. B. build tools, falls nötig)
+RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
 
-# Optional: virtualenv nutzen
-# RUN python -m venv venv
-# ENV PATH="/app/venv/bin:$PATH"
+# Projektdateien in den Container kopieren
+COPY . /app
 
-# Installiere Abhängigkeiten über pyproject.toml
-RUN pip install --upgrade pip
-RUN pip install .
+# Abhängigkeiten und Paket installieren
+RUN pip install --upgrade pip setuptools wheel \
+ && pip install .
 
-# Öffne Jupyter Notebook Port
-EXPOSE 8888
-
-# Standard-Kommando beim Container-Start (z. B. Jupyter starten)
-CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--allow-root", "--no-browser"]
+# Startbefehl (z. B. main.py oder Einstiegspunkt aus setup/pyproject)
+CMD ["ba-programmierung"]
