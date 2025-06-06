@@ -1,0 +1,13 @@
+**/**/*.env/
+**/**/*.venv/
+**/**/build/
+**/**/data/raw/
+**/**/data/processed/
+**/**/data/source/
+**/**/*.egg-info
+**/**/models/
+**/**/notebooks/
+**/**/output/
+**/**/tests/
+**/**/venv/
+**/**/*Zone.Identifier

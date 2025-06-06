@@ -1,5 +1,5 @@
 [project]
-name = "BA__Programmierung"
+name = "BA__Projekt"
 version = "0.1.0"
 description = ""
 readme = "README.md"
@@ -7,6 +7,7 @@ authors = [{ name = "Marten Windler", email = "bachelor-arbeit-lize.annoying157@
 license = { text = "The Unlicense" }
 requires-python = ">=3.8"
 dependencies = [
+    "duckdb",
     "matplotlib",
     "notebook",
     "numpy",
@@ -18,12 +19,15 @@ dependencies = [
     "torchvision",
 ]
 
+[project.scripts]
+ba-programmierung = "BA__Programmierung.main:main"
+
 [build-system]
 requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["BA__Programmierung"]
+where = ["."]
 exclude = [
   "data*",
   "notebooks*",

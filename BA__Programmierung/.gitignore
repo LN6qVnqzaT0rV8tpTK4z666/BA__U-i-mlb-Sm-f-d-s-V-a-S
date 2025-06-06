@@ -1,9 +1,0 @@
-**/**build/
-**/**data/raw/
-**/**data/processed/
-**/**data/source/
-**/**.egg-info
-**/**/notebooks/
-**/**/tests/
-**/**/venv/**/**
-**/**/*Zone.Identifier
