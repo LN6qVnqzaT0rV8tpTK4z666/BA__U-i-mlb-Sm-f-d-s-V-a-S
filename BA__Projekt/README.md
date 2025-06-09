@@ -2,81 +2,100 @@
 
 Bachelor-Arbeit: Unsicherheiten in machine-learning-basierten Surrogatmodellen für die szenariobasierte Validierung autonomer Systeme
 
-## Initialisieren
+## TOC
 
-Setup unter Windows 11 WSL-2-Ubuntu-24.04.01-LTS.
+- [Initialization](#initialization)
+- [Structure](#structure)
+- [Changelog](#changelog)
 
-Umgebungsvariable setzen.
+## Initialization
+
+Setup with Windows 11 WSL-2-Ubuntu-24.04.01-LTS.
+
+Set environment variable.
 ```bash
 sh scripts/setup__project_base_path.sh
 ```
 
-bashrc neu einlesen.
+Reload `bashrc`.
 ```bash
 source ~/.bashrc
 ```
 
-bashrc manuell inspizieren.
+Inspect `bashrc` manually.
 ```bash
 code ~/.bashrc; echo $PROJECT_BASE_PATH
 ```
 
-python3, tar, unzip Installation sicherstellen.
+Ensure installation of python3, tar, unzip, make.
 ```bash
-sudo apt install python3 tar unzip 
+sudo apt install python3 tar unzip make
 ```
 
-Virtuelle Umgebung erstellen.
+Create virtual environment.
 ```bash
 python3 -m venv .venv
 ```
 
-PIP Package-Installation ausführen.
+Install required Python packages via pip.
 ```bash
 pip install duckdb matplotlib notebook numpy pandas torch scikit-learn scipy tensorflow torchvision
 ```
 
-Virtuelle Umgebung aktivieren.
+Activate the virtual environment.
 ```bash
 source .venv/bin/activate
 ```
 
-.venv verlassen.
+Deactivate the virtual environment.
 ```bash
 deactivate
 ```
 
-.venv abräumen bei Umbennenung.
+Clean up .venv if the project directory was renamed.
 ```bash
 rm -rf BA__Programmierung/.venv
 ```
 
-LOKAL: Python-Package-Installation ausführen.
+LOCAL: Install the Python package.
 ```bash
 pip install .
 ```
 
-LOKAL: Gebautes Paket am Einstiegspunkt main.py ausführen.
+LOCAL: Run the built package from the main entry point `main.py`.
 ```bash
 ba-programmierung
 ```
 
-DOCKER: Service starten. 
+DOCKER: Start Docker service. 
 ```bash
 sudo systemctl start docker
 ```
 
-DOCKER: Image bauen.
+DOCKER: Build Docker image.
 ```bash
 docker build -t ba__projekt .
 ```
 
-DOCKER: Image ausführen.
+DOCKER: Run Docker image.
 ```bash
 docker run --rm ba__projekt:latest
 ```
 
+Optional: Visualize loss-training with TensorBoard or inspect `viz`.
+```bash
+tensorboard --logdir /root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/data/processed/; http://localhost:6006
+```
+
+Optional: Clean build artifacts.
+```bash
+make clean
+```
+
 ## Changelog
-- [x] Grundlegend Docker aufsetzen.
-- [x] Grundlegende Datenbankverbindung aufsetzen.
-- [x] Readme grundlegend aufsetzen.
+- [x] Setup basic clean-scripts.
+- [x] Start english documentation.
+- [x] Setup basic loss-visualization to `/viz/`.
+- [x] Setup basic iris EDNN-training to `/data/processed/`.
+- [x] Setup basic Docker.
+- [x] Setup Readme.

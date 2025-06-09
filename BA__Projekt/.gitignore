@@ -5,9 +5,11 @@
 **/**/data/processed/
 **/**/data/source/
 **/**/*.egg-info
+**/**/logs/
 **/**/models/
 **/**/notebooks/
 **/**/output/
+**/**/*png
 **/**/tests/
 **/**/venv/
 **/**/*Zone.Identifier
