@@ -1,9 +1,19 @@
-.PHONY: build clean init-local init-docker
+.PHONY: build clean init-all init-local init-docker
 
 clean:
 	bash scripts/clean__all.sh
 
-build:
+build-main:
+	@echo "==> Activate python virtual environment..."
+	@bash -c "source .venv/bin/activate && \
+		echo '==> Restarting services...' && \
+		sh scripts/service__restart_all.sh && \
+		echo '==> Start building BA__Programmierung.main:main...' && \
+		pip install . \
+	"
+	ba-programmierung
+
+build-training:
 	@echo "==> Activate python virtual environment..."
 	@bash -c "source .venv/bin/activate && \
 		echo '==> Restarting services...' && \
@@ -13,7 +23,7 @@ build:
 		echo '==> Starting EDNN loss-visualization...' && \
 		cd ../viz/ && python3 viz__ednn_regression__iris.py"
 
-init all 
+init all:
 	$(MAKE) init-local
 	$(MAKE) init-docker
 
@@ -40,6 +50,9 @@ init-local:
 
 	@echo "==> Reload .bashrc"
 	bash -c "source ~/.bashrc"
+
+	@echo "==> Re-Enter .venv"
+	bash -c "source ~/.venv/bin/activate"
 
 	@echo "==> Ensure required system packages are installed"
 	sudo apt-get update && sudo apt-get install -y python3 tar unzip make

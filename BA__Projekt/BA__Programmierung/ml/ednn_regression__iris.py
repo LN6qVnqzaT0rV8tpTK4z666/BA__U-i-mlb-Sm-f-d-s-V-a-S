@@ -12,6 +12,11 @@ import os
 import matplotlib.pyplot as plt
 from tensorboard.backend.event_processing import event_accumulator
 
+
+# from models.model__ednn_basic import EvidentialNet
+from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet 
+
+
 # ============
 # Dataset
 # ============
@@ -35,30 +40,6 @@ class IrisDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
-
-# ============
-# Model
-# ============
-
-class EvidentialNet(nn.Module):
-    def __init__(self, input_dim):
-        super().__init__()
-        self.hidden = nn.Sequential(
-            nn.Linear(input_dim, 64),
-            nn.ReLU(),
-            nn.Linear(64, 64),
-            nn.ReLU(),
-        )
-        self.output = nn.Linear(64, 4)  # [mu, v, alpha, beta]
-
-    def forward(self, x):
-        out = self.hidden(x)
-        evidential_params = self.output(out)
-        mu, logv, logalpha, logbeta = torch.chunk(evidential_params, 4, dim=-1)
-        v = F.softplus(logv) + 1e-6
-        alpha = F.softplus(logalpha) + 1.0
-        beta = F.softplus(logbeta) + 1e-6
-        return mu, v, alpha, beta
 
 # ============
 # Evidential Loss

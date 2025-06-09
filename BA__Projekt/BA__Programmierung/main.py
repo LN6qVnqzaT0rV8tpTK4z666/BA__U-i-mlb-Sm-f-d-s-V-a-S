@@ -1,16 +1,14 @@
 # BA__Projekt/BA__Programmierung/main.py
 
-# from db.load_iris import load_data
+from db.persist import db__persist
 from ml.ednn_regression__iris import main as ednn_main
 from rich.console import Console
 
 
 def main():
-
-    # Create a Console instance
     console = Console()
     console.log("Hello Project.")
-    #load_data()
+    db__persist()
     ednn_main()
 
 if __name__ == '__main__':
