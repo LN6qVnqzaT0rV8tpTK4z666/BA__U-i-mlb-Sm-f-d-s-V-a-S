@@ -1,3 +1,4 @@
+import glob
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -9,6 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 import os
 import matplotlib.pyplot as plt
 from tensorboard.backend.event_processing import event_accumulator
+
 # ============
 # Dataset
 # ============
@@ -119,55 +121,6 @@ def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device='cpu'):
         print(f"Epoch {epoch+1}/{epochs} - Train Loss: {avg_loss:.4f}")
 
     writer.close()
-
-
-# ============
-# Vizualization
-# ============
-
-# === Pfade definieren ===
-# Log-Verzeichnis
-log_dir = "/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/data/processed/ednn_iris_20250609-104516"
-
-# Zielpfad für Visualisierung
-viz_dir = "/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/viz"
-os.makedirs(viz_dir, exist_ok=True)
-output_path = os.path.join(viz_dir, "loss_curve.png")
-
-# === TensorBoard-Logs einlesen ===
-ea = event_accumulator.EventAccumulator(log_dir)
-ea.Reload()
-
-# Verfügbare Tags anzeigen (optional)
-print("Verfügbare Scalar-Tags:", ea.Tags()["scalars"])
-
-# Daten extrahieren
-train_scalars = ea.Scalars("Loss/train")
-val_scalars = ea.Scalars("Loss/val") if "Loss/val" in ea.Tags()["scalars"] else []
-
-train_steps = [e.step for e in train_scalars]
-train_vals = [e.value for e in train_scalars]
-
-plt.figure(figsize=(10, 6))
-plt.plot(train_steps, train_vals, label="Train Loss", color="blue")
-
-if val_scalars:
-    val_steps = [e.step for e in val_scalars]
-    val_vals = [e.value for e in val_scalars]
-    plt.plot(val_steps, val_vals, label="Val Loss", color="orange")
-
-
-plt.title("Train & Validation Loss")
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-
-# === Bild speichern ===
-plt.savefig(output_path)
-print(f"Plot gespeichert unter: {output_path}")
-
 
 # ============
 # Main

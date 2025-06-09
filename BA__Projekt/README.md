@@ -82,6 +82,11 @@ DOCKER: Run Docker image.
 docker run --rm ba__projekt:latest
 ```
 
+demo iris training
+```bash
+make build
+```
+
 Optional: Visualize loss-training with TensorBoard or inspect `viz`.
 ```bash
 tensorboard --logdir /root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/data/processed/; http://localhost:6006
@@ -93,7 +98,8 @@ make clean
 ```
 
 ## Changelog
-- [x] Setup basic clean-scripts.
+- [ ] Setup basic make build.
+- [x] Setup basic make clean.
 - [x] Start english documentation.
 - [x] Setup basic loss-visualization to `/viz/`.
 - [x] Setup basic iris EDNN-training to `/data/processed/`.
