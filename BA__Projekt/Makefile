@@ -51,8 +51,8 @@ init-local:
 	@echo "==> Reload .bashrc"
 	bash -c "source ~/.bashrc"
 
-	@echo "==> Re-Enter .venv"
-	bash -c "source ~/.venv/bin/activate"
+	# @echo "==> Re-Enter .venv"
+	# bash -c "source ~/.venv/bin/activate"
 
 	@echo "==> Ensure required system packages are installed"
 	sudo apt-get update && sudo apt-get install -y python3 tar unzip make

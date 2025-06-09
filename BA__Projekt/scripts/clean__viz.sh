@@ -6,6 +6,6 @@ cd "$(dirname "$0")/.."
 echo "Cleaning folder: viz/"
 
 # Delete all contents in the viz directory (but not the directory itself)
-rm -rf viz/*
+rm -rf assets/viz/*
 
 echo "Cleanup complete."

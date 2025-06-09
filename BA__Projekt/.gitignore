@@ -1,5 +1,6 @@
 **/**/*.env/
 **/**/*.venv/
+**/**/assets/
 **/**/build/
 **/**/data/raw/
 **/**/data/processed/

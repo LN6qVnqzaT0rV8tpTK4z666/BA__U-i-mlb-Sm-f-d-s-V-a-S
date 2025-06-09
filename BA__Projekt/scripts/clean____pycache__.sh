@@ -1,11 +1,10 @@
 #!/bin/bash
 
-# Navigate to the project root
-cd "$(dirname "$0")/.."
-
+# Navigate to the project root (directory of the script's parent)
+cd "$(dirname "$0")/.." || exit 1
 echo "Cleaning folder ending with '__pycache__'."
 
-# Find and delete all matching files
-rm -rf BA__Programmierung/__pycache__/
+# Find and remove all __pycache__ folders in the project
+find . -type d -name "__pycache__" -exec rm -rf {} +
 
 echo "Cleanup complete."

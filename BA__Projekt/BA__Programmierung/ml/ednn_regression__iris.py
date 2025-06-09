@@ -14,12 +14,13 @@ from tensorboard.backend.event_processing import event_accumulator
 
 
 # from models.model__ednn_basic import EvidentialNet
-from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet 
+from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
 
 
 # ============
 # Dataset
 # ============
+
 
 class IrisDataset(Dataset):
     def __init__(self):
@@ -32,7 +33,9 @@ class IrisDataset(Dataset):
         X, y = X[mask], y[mask]
 
         self.scaler = StandardScaler()
-        self.X = torch.tensor(self.scaler.fit_transform(X), dtype=torch.float32)
+        self.X = torch.tensor(
+            self.scaler.fit_transform(X), dtype=torch.float32
+        )
         self.y = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
 
     def __len__(self):
@@ -41,32 +44,40 @@ class IrisDataset(Dataset):
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
 
+
 # ============
 # Evidential Loss
 # ============
 
+
 def evidential_loss(y, mu, v, alpha, beta, lambda_coef=1.0):
     two_blambda = 2 * beta * (1 + v)
-    nll = 0.5 * torch.log(torch.pi / v) \
-        - alpha * torch.log(two_blambda) \
-        + (alpha + 0.5) * torch.log((y - mu) ** 2 * v + two_blambda) \
-        + torch.lgamma(alpha) \
+    nll = (
+        0.5 * torch.log(torch.pi / v)
+        - alpha * torch.log(two_blambda)
+        + (alpha + 0.5) * torch.log((y - mu) ** 2 * v + two_blambda)
+        + torch.lgamma(alpha)
         - torch.lgamma(alpha + 0.5)
+    )
 
     error = torch.abs(y - mu)
     reg = error * (2 * v + alpha)
     return (nll + lambda_coef * reg).mean()
 
+
 # ============
 # Training
 # ============
 
-def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device='cpu'):
+
+def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device="cpu"):
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
     # === TensorBoard Writer ===
-    log_dir = os.path.join("/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/data/processed",
-                           "ednn_iris_" + datetime.now().strftime("%Y%m%d-%H%M%S"))
+    log_dir = os.path.join(
+        "/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/data/processed",
+        "ednn_iris_" + datetime.now().strftime("%Y%m%d-%H%M%S"),
+    )
     writer = SummaryWriter(log_dir=log_dir)
 
     model.to(device)
@@ -100,13 +111,15 @@ def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device='cpu'):
             avg_val_loss = val_loss / len(val_loader)
             writer.add_scalar("Loss/val", avg_val_loss, epoch)
 
-        print(f"Epoch {epoch+1}/{epochs} - Train Loss: {avg_loss:.4f}")
+        print(f"Epoch {epoch + 1}/{epochs} - Train Loss: {avg_loss:.4f}")
 
     writer.close()
+
 
 # ============
 # Main
 # ============
+
 
 def main():
     dataset = IrisDataset()
@@ -119,6 +132,7 @@ def main():
 
     model = EvidentialNet(input_dim=4)
     train(model, train_loader, val_loader, epochs=100)
+
 
 if __name__ == "__main__":
     main()

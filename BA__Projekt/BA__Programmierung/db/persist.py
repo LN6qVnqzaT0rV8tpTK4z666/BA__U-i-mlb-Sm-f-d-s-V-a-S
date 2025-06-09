@@ -2,7 +2,11 @@
 
 import duckdb
 
-from BA__Programmierung.config import DATA_DIR__RAW
+from BA__Programmierung.config import (
+    DB_PATH__EDNN_REGRESSION__IRIS,
+    CSV_PATH__EDNN_REGRESSION__IRIS,
+    SQLITE_PATH__EDNN_REGRESSION__IRIS,
+)
 from rich.console import Console
 
 
@@ -10,25 +14,28 @@ def db__persist():
     console = Console()
     console.log("Hello persistance.")
 
-    csv_path = DATA_DIR__RAW / 'dataset__iris__dataset' / 'Iris.csv'
-    sqlite_path = DATA_DIR__RAW / 'dataset__iris__dataset' / 'database.sqlite'
+    db_path__ednn_regression__iris = DB_PATH__EDNN_REGRESSION__IRIS
+    csv_path__ednn_regression__iris = CSV_PATH__EDNN_REGRESSION__IRIS
+    sqlite_path__ednn_regression__iris = SQLITE_PATH__EDNN_REGRESSION__IRIS
 
-    con = duckdb.connect('my_database.duckdb')
+    con = duckdb.connect(db_path__ednn_regression__iris)
 
     con.execute(f"""
         CREATE OR REPLACE TABLE iris_csv AS
-        SELECT * FROM read_csv_auto('{csv_path.as_posix()}')
+        SELECT * FROM read_csv_auto('{csv_path__ednn_regression__iris.as_posix()}')
     """)
 
     con.execute(f"""
-        ATTACH DATABASE '{sqlite_path.as_posix()}' AS sqlite_db (TYPE SQLITE)
+        ATTACH DATABASE '{sqlite_path__ednn_regression__iris.as_posix()}' AS sqlite_db (TYPE SQLITE)
     """)
 
-    print(con.execute("""
+    print(
+        con.execute("""
         SELECT table_name 
         FROM information_schema.tables 
         WHERE table_schema = 'sqlite_db'
-    """).fetchall())
+    """).fetchall()
+    )
 
     con.execute("""
         CREATE OR REPLACE TABLE iris_sql AS
@@ -36,3 +43,4 @@ def db__persist():
     """)
 
     con.close()
+    console.log(f"DuckDB gespeichert unter: {db_path__ednn_regression__iris}")

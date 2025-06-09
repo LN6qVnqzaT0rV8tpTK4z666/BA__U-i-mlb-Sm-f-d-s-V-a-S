@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Pfad zum Verzeichnis mit den Rohdaten
-DATA_DIR="$(dirname "$0")/../data/raw"
+DATA_DIR="$(dirname "$0")/../assets/data/raw"
 
 # Prüfen, ob Verzeichnis existiert
 if [ ! -d "$DATA_DIR" ]; then

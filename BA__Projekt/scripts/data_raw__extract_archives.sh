@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Zielverzeichnis
-DATA_DIR="../data/raw"
+DATA_DIR="../assets/data/raw"
 
 cd "$DATA_DIR" || exit 1
 

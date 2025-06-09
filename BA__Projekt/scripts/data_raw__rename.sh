@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Absoluter oder relativer Pfad zum raw-Datenordner
-DATA_DIR="$(dirname "$0")/../data/source"
+DATA_DIR="$(dirname "$0")/../assets/data/source"
 
 # Sicherstellen, dass der Ordner existiert
 if [ ! -d "$DATA_DIR" ]; then

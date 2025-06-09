@@ -34,8 +34,7 @@ exclude = [
   "logs*",
   "notebooks*",
   "scripts*",
-  "tests*",
-  "viz*"
+  "tests*"
 ]
 
 [tool.pytest.ini_options]

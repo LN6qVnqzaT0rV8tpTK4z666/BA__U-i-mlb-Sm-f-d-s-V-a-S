@@ -32,9 +32,14 @@ Setup project in docker.
 make init-docker
 ```
 
-Demo iris training
+Build demo iris training
 ```bash
-make build
+make build-training
+```
+
+Build whole project.
+```bash
+make build-main
 ```
 
 Optional: Visualize loss-training with TensorBoard or inspect `viz`.
