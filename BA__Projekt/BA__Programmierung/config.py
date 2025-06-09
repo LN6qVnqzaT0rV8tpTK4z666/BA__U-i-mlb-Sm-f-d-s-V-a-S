@@ -1,4 +1,5 @@
 # BA__Projekt/BA__Programmierung/config.py
+
 from pathlib import Path
 
 

@@ -1,4 +1,5 @@
-import glob
+# BA__Projekt/BA__Programmierung/ml/ednn_regression__iris.py
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

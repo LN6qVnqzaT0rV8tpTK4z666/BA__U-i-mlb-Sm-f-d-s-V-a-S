@@ -12,77 +12,27 @@ Bachelor-Arbeit: Unsicherheiten in machine-learning-basierten Surrogatmodellen f
 
 Setup with Windows 11 WSL-2-Ubuntu-24.04.01-LTS.
 
-Set environment variable.
-```bash
-sh scripts/setup__project_base_path.sh
-```
-
-Reload `bashrc`.
-```bash
-source ~/.bashrc
-```
-
-Inspect `bashrc` manually.
-```bash
-code ~/.bashrc; echo $PROJECT_BASE_PATH
-```
-
 Ensure installation of python3, tar, unzip, make.
 ```bash
 sudo apt install python3 tar unzip make
 ```
 
-Create virtual environment.
+Setup project in local python package and in docker image.
 ```bash
-python3 -m venv .venv
+make init-all
 ```
 
-Install required Python packages via pip.
+Setup project in local python package.
 ```bash
-pip install duckdb matplotlib notebook numpy pandas torch scikit-learn scipy tensorflow torchvision
+make init-local
 ```
 
-Activate the virtual environment.
+Setup project in docker.
 ```bash
-source .venv/bin/activate
+make init-docker
 ```
 
-Deactivate the virtual environment.
-```bash
-deactivate
-```
-
-Clean up .venv if the project directory was renamed.
-```bash
-rm -rf BA__Programmierung/.venv
-```
-
-LOCAL: Install the Python package.
-```bash
-pip install .
-```
-
-LOCAL: Run the built package from the main entry point `main.py`.
-```bash
-ba-programmierung
-```
-
-DOCKER: Start Docker service. 
-```bash
-sudo systemctl start docker
-```
-
-DOCKER: Build Docker image.
-```bash
-docker build -t ba__projekt .
-```
-
-DOCKER: Run Docker image.
-```bash
-docker run --rm ba__projekt:latest
-```
-
-demo iris training
+Demo iris training
 ```bash
 make build
 ```
@@ -98,8 +48,7 @@ make clean
 ```
 
 ## Changelog
-- [ ] Setup basic make build.
-- [x] Setup basic make clean.
+- [x] Setup basic make build, clean, init-all, init-local, init-docker.
 - [x] Start english documentation.
 - [x] Setup basic loss-visualization to `/viz/`.
 - [x] Setup basic iris EDNN-training to `/data/processed/`.

@@ -1,7 +1,8 @@
+# BA__Projekt/BA__Programmierung/viz/vis__ednn_regression__iris.py
 
-import os
 import glob
 import matplotlib.pyplot as plt
+import os
 from tensorboard.backend.event_processing import event_accumulator
 
 # ============
