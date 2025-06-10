@@ -8,7 +8,6 @@
 **/**/data/source/
 **/**/*.egg-info
 **/**/gen/
-**/**/__init__.py
 **/**/logs/
 **/**/models/
 **/**/notebooks/
@@ -19,3 +18,7 @@
 **/**/viz/
 **/**/venv/
 **/**/*Zone.Identifier
+# temporary:
+**/**/datasets/dataset__torch_n-dim.py
+**/**/ednn_regression__nmavani__func1.py
+**/**/viz__ednn_regression__nmavani__func1.py

@@ -15,6 +15,7 @@ from tensorboard.backend.event_processing import event_accumulator
 
 # from models.model__ednn_basic import EvidentialNet
 from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
+from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 
 
 # ============
@@ -43,26 +44,6 @@ class IrisDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.X[idx], self.y[idx]
-
-
-# ============
-# Evidential Loss
-# ============
-
-
-def evidential_loss(y, mu, v, alpha, beta, lambda_coef=1.0):
-    two_blambda = 2 * beta * (1 + v)
-    nll = (
-        0.5 * torch.log(torch.pi / v)
-        - alpha * torch.log(two_blambda)
-        + (alpha + 0.5) * torch.log((y - mu) ** 2 * v + two_blambda)
-        + torch.lgamma(alpha)
-        - torch.lgamma(alpha + 0.5)
-    )
-
-    error = torch.abs(y - mu)
-    reg = error * (2 * v + alpha)
-    return (nll + lambda_coef * reg).mean()
 
 
 # ============

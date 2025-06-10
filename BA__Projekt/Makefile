@@ -9,7 +9,7 @@ build-main:
 		echo '==> Restarting services...' && \
 		sh scripts/service__restart_all.sh && \
 		echo '==> Start building BA__Programmierung.main:main...' && \
-		pip install . \
+		pip install . --quiet \
 	"
 	ba-programmierung
 
@@ -23,7 +23,11 @@ build-training:
 		echo '==> Starting EDNN loss-visualization...' && \
 		cd ../viz/ && python3 viz__ednn_regression__iris.py"
 
-init all:
+data-source-all:
+	@echo "==> Processing datasets in ./assets/data/sources/ ..."
+	@bash -c "bash scripts/data_source__all.sh"
+
+init-all:
 	$(MAKE) init-local
 	$(MAKE) init-docker
 
@@ -66,7 +70,7 @@ init-local:
 	pip install duckdb matplotlib notebook numpy pandas torch scikit-learn scipy tensorflow torchvision
 
 	@echo "==> Install local Python package"
-	. .venv/bin/activate && pip install .
+	. .venv/bin/activate && pip install . --quiet
 
 	@echo "==> Run project main entry point"
 	. .venv/bin/activate && ba-programmierung

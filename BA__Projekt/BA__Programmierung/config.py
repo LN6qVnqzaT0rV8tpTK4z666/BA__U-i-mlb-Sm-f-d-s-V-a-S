@@ -17,6 +17,11 @@ DATA_DIR__PROCESSED = ASSET_DIR / "data" / "processed"
 
 DB_PATH = ASSET_DIR / "dbs"
 
+# DATASET__BOSTON_HOUSING
+# DB_PATH__BOSTON_HOUSING = DB_PATH / "dataset__boston_housing.duckdb"
+# CSV_PATH__BOSTON_HOUSING = DATA_DIR__RAW / "dataset__boston_housing" / "dataset__boston_housing.csv"
+# SQLITE_PATH__BOSTON_HOUSING = DATA_DIR__RAW / "dataset__boston_housing" / "dataset__boston_housing.sqlite"
+
 # DATASET__CIFAR10
 # DB_PATH__CIFAR10 = DB_PATH / "dataset__cifar10.duckdb"
 # CSV_PATH__CIFAR10 = DATA_DIR__RAW / "dataset__cifar10" / "dataset__cifar10.csv"
@@ -91,3 +96,7 @@ SCRIPTS_PATH = DATA_DIR / "scripts"
 TESTS_PATH = DATA_DIR / "tests"
 
 VIZ_PATH = ASSET_DIR / "viz"
+
+def conf__tensor_board():
+  absl.logging.set_verbosity(absl.logging.ERROR)
+  logging.getLogger('absl').setLevel(logging.ERROR)

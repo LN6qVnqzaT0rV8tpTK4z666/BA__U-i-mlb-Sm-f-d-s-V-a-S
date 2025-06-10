@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Absoluter oder relativer Pfad zum raw-Datenordner
+# Absoluter oder relativer Pfad zum source-Datenordner
 DATA_DIR="$(dirname "$0")/../assets/data/source"
 
 # Sicherstellen, dass der Ordner existiert
