@@ -2,10 +2,13 @@
 **/**/*.venv/
 **/**/assets/
 **/**/build/
+**/**/conv/
 **/**/data/raw/
 **/**/data/processed/
 **/**/data/source/
 **/**/*.egg-info
+**/**/gen/
+**/**/__init__.py
 **/**/logs/
 **/**/models/
 **/**/notebooks/

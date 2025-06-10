@@ -1,4 +1,4 @@
-.PHONY: build clean init-all init-local init-docker
+.PHONY: build-main build-training clean init-all init-local init-docker
 
 clean:
 	bash scripts/clean__all.sh
