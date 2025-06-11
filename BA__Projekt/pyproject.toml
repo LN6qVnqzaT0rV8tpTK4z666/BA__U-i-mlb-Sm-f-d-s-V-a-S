@@ -8,6 +8,7 @@ license = { text = "The Unlicense" }
 requires-python = ">=3.8"
 dependencies = [
     "duckdb",
+    "loguru",
     "matplotlib",
     "notebook",
     "numpy",

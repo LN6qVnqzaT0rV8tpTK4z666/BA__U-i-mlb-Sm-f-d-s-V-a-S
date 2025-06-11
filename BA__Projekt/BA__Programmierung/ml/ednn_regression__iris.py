@@ -13,37 +13,10 @@ import matplotlib.pyplot as plt
 from tensorboard.backend.event_processing import event_accumulator
 
 
+from BA__Programmierung.ml.datasets.dataset__torch_duckdb_iris import DatasetTorchDuckDBIris
 # from models.model__ednn_basic import EvidentialNet
 from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
-
-
-# ============
-# Dataset
-# ============
-
-
-class IrisDataset(Dataset):
-    def __init__(self):
-        data = load_iris()
-        X = data.data
-        y = data.target.astype(float)  # regression-style: float targets
-
-        # Only use samples from two classes (binary regression) or simplify the task
-        mask = y < 2
-        X, y = X[mask], y[mask]
-
-        self.scaler = StandardScaler()
-        self.X = torch.tensor(
-            self.scaler.fit_transform(X), dtype=torch.float32
-        )
-        self.y = torch.tensor(y, dtype=torch.float32).unsqueeze(1)
-
-    def __len__(self):
-        return len(self.X)
-
-    def __getitem__(self, idx):
-        return self.X[idx], self.y[idx]
 
 
 # ============
@@ -103,7 +76,11 @@ def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device="cpu"):
 
 
 def main():
-    dataset = IrisDataset()
+    dataset = DatasetTorchDuckDBIris(
+        db_path="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/dbs/dataset__iris__dataset.duckdb",
+        table_name="iris__dataset_csv"
+    )
+    
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
     train_set, val_set = random_split(dataset, [train_size, val_size])

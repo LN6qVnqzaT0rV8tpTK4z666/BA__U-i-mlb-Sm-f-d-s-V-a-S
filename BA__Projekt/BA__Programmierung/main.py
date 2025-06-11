@@ -1,22 +1,83 @@
 # BA__Projekt/BA__Programmierung/main.py
 
 import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' # Suppress TensorFlow logging messages: INFO, WARNING, ERROR
-os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0' # Disable oneDNN custom op warnings
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = (
+    "3"  # Suppress TensorFlow logging messages: INFO, WARNING, ERROR
+)
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"  # Disable oneDNN custom op warnings
+
+import importlib
 import time
+
+from BA__Programmierung.config import ML_DIR
 from db.persist import db__persist
-from ml.ednn_regression__iris import main as ednn__main
+
+# from ml.ednn_regression__iris import main as ednn__main
 from rich.console import Console
-from viz.viz__ednn_regression__iris import main as ednn__viz
+# from viz.viz__ednn_regression__iris import main as ednn__viz
+
+
+def get_target_keys():
+    """
+    Detect all ednn_regression__*.py training scripts and derive their keys.
+    """
+    console = Console()
+    console.log(ML_DIR)
+    return [
+        f.stem.replace("ednn_regression__", "")
+        for f in ML_DIR.glob("ednn_regression__*.py")
+        if f.is_file()
+    ]
+
+
+def dynamic_import_and_run(module_path, description=""):
+    """
+    Import module dynamically and run its `main()` method.
+    """
+    try:
+        module = importlib.import_module(module_path)
+        module.main()
+    except Exception as e:
+        console = Console()
+        console.print(
+            f"[red]❌ Error running {description} from {module_path}[/red]"
+        )
+        console.print_exception()
+        raise e
 
 
 def main():
     console = Console()
-    console.log("Hello Project.")
+    console.log("[bold green]Hello Project.[/bold green]")
+
+    # Initial DB setup
     db__persist()
-    ednn__main()
-    time.sleep(1)
-    ednn__viz()
+
+    # Discover and run all target training + viz modules
+    target_keys = get_target_keys()
+
+    console.log(target_keys)
+
+    for key in target_keys:
+        ml_module = f"ml.ednn_regression__{key}"
+        viz_module = f"viz.viz__ednn_regression__{key}"
+
+        console.rule(f"[bold blue]Running Training: {key}[/bold blue]")
+        dynamic_import_and_run(ml_module, description=f"ML Training ({key})")
+
+        time.sleep(1)  # Optional delay between training and viz
+
+        console.rule(
+            f"[bold magenta]Running Visualization: {key}[/bold magenta]"
+        )
+        dynamic_import_and_run(
+            viz_module, description=f"Visualization ({key})"
+        )
+
+    console.log(
+        "[bold green]All trainings and visualizations completed.[/bold green]"
+    )
 
 
 if __name__ == "__main__":

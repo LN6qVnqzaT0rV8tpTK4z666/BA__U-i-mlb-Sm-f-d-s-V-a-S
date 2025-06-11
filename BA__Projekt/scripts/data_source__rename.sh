@@ -14,10 +14,15 @@ for file in "$DATA_DIR"/*; do
   # Nur reguläre Dateien (nicht Verzeichnisse)
   if [ -f "$file" ]; then
     filename=$(basename "$file")
-    
-    # Wenn der Name bereits mit dataset__ beginnt, überspringen
+
+    # Nur fortfahren, wenn die Datei nicht bereits korrekt benannt ist
     if ! echo "$filename" | grep -q "^dataset__"; then
-      new_name="dataset__${filename}"
+      # Ersetze Sonderzeichen wie "+" durch "_"
+      sanitized_name=$(echo "$filename" | sed 's/+/_/g')
+
+      # Präfix hinzufügen
+      new_name="dataset__${sanitized_name}"
+
       mv "$file" "$DATA_DIR/$new_name"
       echo "Renamed: $filename → $new_name"
     fi

@@ -18,7 +18,7 @@ DATA_DIR__PROCESSED = ASSET_DIR / "data" / "processed"
 DB_PATH = ASSET_DIR / "dbs"
 
 # DATASET__BOSTON_HOUSING
-# DB_PATH__BOSTON_HOUSING = DB_PATH / "dataset__boston_housing.duckdb"
+DB_PATH__BOSTON_HOUSING = DB_PATH / "dataset__boston_housing.duckdb"
 # CSV_PATH__BOSTON_HOUSING = DATA_DIR__RAW / "dataset__boston_housing" / "dataset__boston_housing.csv"
 # SQLITE_PATH__BOSTON_HOUSING = DATA_DIR__RAW / "dataset__boston_housing" / "dataset__boston_housing.sqlite"
 
@@ -43,7 +43,7 @@ DB_PATH = ASSET_DIR / "dbs"
 # SQLITE_PATH__CONDITION_BASED_MAINTENANCE_OF_NAVAL_PROPULSION_PLANTS = DATA_DIR__RAW / "dataset__condition_based_maintenance_of_naval_propulsion_plants" / "database.sqlite"
 
 # DATASET__GENERATED__MAVANI__FUNC_1
-# DB_PATH__GENERATED__MAVANI__FUNC_1 = DB_PATH / "dataset__generated__nmavani__func_1.duckdb"
+DB_PATH__GENERATED__MAVANI__FUNC_1 = DB_PATH / "dataset__generated__nmavani__func_1.duckdb"
 CSV_PATH__GENERATED__MAVANI__FUNC_1 = DATA_DIR__RAW / "dataset__generated__nmavani__func_1" / "dataset__generated__nmavani__func_1.csv"
 # SQLITE_PATH__GENERATED__MAVANI__FUNC_1 = DATA_DIR__RAW / "dataset__generated__nmavani__func_1" / "database.sqlite"
 
@@ -53,12 +53,12 @@ CSV_PATH__EDNN_REGRESSION__IRIS = DATA_DIR__RAW / "dataset__iris__dataset" / "Ir
 SQLITE_PATH__EDNN_REGRESSION__IRIS = DATA_DIR__RAW / "dataset__iris__dataset" / "database.sqlite"
 
 # DATASET__FMNIST
-# DB_PATH__FMNIST = DB_PATH / "dataset__fmnist.duckdb"
+DB_PATH__FMNIST = DB_PATH / "dataset__fmnist.duckdb"
 # CSV_PATH__FMNIST = DATA_DIR__RAW / "dataset__fmnist" / "dataset__fmnist.csv"
 # SQLITE_PATH__FMNIST = DATA_DIR__RAW / "dataset__fmnist" / "dataset__fmnist.sqlite"
 
 # DATASET__KMNIST
-# DB_PATH__KMNIST = DB_PATH / "dataset__kmnist.duckdb"
+DB_PATH__KMNIST = DB_PATH / "dataset__kmnist.duckdb"
 # CSV_PATH__KMNIST = DATA_DIR__RAW / "dataset__kmnist" / "dataset__kmnist.csv"
 # SQLITE_PATH__KMNIST = DATA_DIR__RAW / "dataset__kmnist" / "dataset__kmnist.sqlite"
 
@@ -83,6 +83,8 @@ CSV_PATH__KIN8NM = DATA_DIR__RAW / "dataset__kin8nm" / "dataset__kin8nm-dataset_
 # CSV_PATH__WINE_QUALITY = DATA_DIR__RAW / "wine_quality__dataset" / "wine_quality.csv"
 # SQLITE_PATH__WINE_QUALITY = DATA_DIR__RAW / "wine_quality__dataset" / "wine_quality__dataset.sqlite"
 
+LOGS_DIR = ASSET_DIR / "logs"
+
 MODEL_DIR = BASE_DIR / "models"
 
 NOTEBOOK_PATH = ASSET_DIR / "notebooks"
@@ -91,12 +93,10 @@ OUTPUT_DIR = BASE_DIR / "output"
 
 PROJECT_DIR = BASE_DIR / "BA__Programmierung"
 
+ML_DIR = PROJECT_DIR / "ml"
+
 SCRIPTS_PATH = DATA_DIR / "scripts"
 
 TESTS_PATH = DATA_DIR / "tests"
 
 VIZ_PATH = ASSET_DIR / "viz"
-
-def conf__tensor_board():
-  absl.logging.set_verbosity(absl.logging.ERROR)
-  logging.getLogger('absl').setLevel(logging.ERROR)

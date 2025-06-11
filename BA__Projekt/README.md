@@ -17,6 +17,13 @@ Ensure installation of python3, tar, unzip, make.
 sudo apt install python3 tar unzip make
 ```
 
+Download your data-sources `assets/data/sources`.
+
+Handle untar, unzip, .csv, move .compressed-src to same-named folder, move same-named folder from `assets/data/sources` to `assets/data/raw`.
+```bash
+make data-source
+```
+
 Setup project in local python package and in docker image.
 ```bash
 make init-all

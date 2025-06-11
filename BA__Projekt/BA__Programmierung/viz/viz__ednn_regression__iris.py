@@ -8,7 +8,7 @@ import torch
 
 from BA__Programmierung.config import VIZ_PATH, DATA_DIR__PROCESSED
 from BA__Programmierung.ml.ednn_regression__iris import EvidentialNet
-from BA__Programmierung.ml.ednn_regression__iris import IrisDataset
+from BA__Programmierung.ml.datasets.dataset__torch_duckdb_iris import DatasetTorchDuckDBIris
 from sklearn.decomposition import PCA
 from tensorboard.backend.event_processing import event_accumulator
 
@@ -35,9 +35,10 @@ def plot_loss_curves():
     print(f"Verwende Log-Verzeichnis: {log_dir}")
 
     # === Zielverzeichnis für Visualisierung ===
-    viz_dir = VIZ_PATH
-    os.makedirs(viz_dir, exist_ok=True)
-    output_path = os.path.join(viz_dir, "loss_curve.png")
+    SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
+    SCRIPT_VIZ_DIR = os.path.join(VIZ_PATH, SCRIPT_NAME)
+    os.makedirs(SCRIPT_VIZ_DIR, exist_ok=True)
+    output_path = os.path.join(SCRIPT_VIZ_DIR, "loss_curve.png")
 
     # === TensorBoard-Logs einlesen ===
     ea = event_accumulator.EventAccumulator(log_dir)
@@ -135,15 +136,19 @@ def evidential_dashboard(model, dataset, device="cpu"):
 
     plt.tight_layout(rect=[0, 0.03, 1, 0.97])
 
-    # === Zielverzeichnis nutzen ===
-    os.makedirs(VIZ_PATH, exist_ok=True)
-    output_path = os.path.join(VIZ_PATH, "evidential_dashboard.png")
+    SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
+    SCRIPT_VIZ_DIR = os.path.join(VIZ_PATH, SCRIPT_NAME)
+    os.makedirs(SCRIPT_VIZ_DIR, exist_ok=True)
+    output_path = os.path.join(SCRIPT_VIZ_DIR, "evidential_dashboard.png")
     plt.savefig(output_path)
     print(f"Dashboard gespeichert unter: {output_path}")
 
 
 def main():
-    dataset = IrisDataset()
+    dataset = DatasetTorchDuckDBIris(
+        db_path="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/dbs/dataset__iris__dataset.duckdb",
+        table_name="iris__dataset_csv"  # ggf. anpassen
+    )
     device = "cpu"
     model = EvidentialNet(input_dim=4)
     plot_loss_curves()
