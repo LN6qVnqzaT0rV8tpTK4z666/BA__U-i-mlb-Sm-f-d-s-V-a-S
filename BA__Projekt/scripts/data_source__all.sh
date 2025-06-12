@@ -12,6 +12,7 @@ ordered_scripts=(
   "data_source__rename.sh"
   "data_source__extract_archives.sh"
   "data_source__move.sh"
+  "data_source__flatten.sh"
 )
 
 for script in "${ordered_scripts[@]}"; do
