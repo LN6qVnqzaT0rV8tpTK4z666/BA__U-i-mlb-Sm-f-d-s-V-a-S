@@ -23,6 +23,10 @@ build-training:
 		echo '==> Starting EDNN loss-visualization...' && \
 		cd ../viz/ && python3 viz__ednn_regression__iris.py"
 
+create-files:
+	@echo "==> Create files by token..."
+	@bash -c "sh scripts/create__files_by_token.sh"
+
 data-source-all:
 	@echo "==> Processing datasets in ./assets/data/sources/ ..."
 	@bash -c "bash scripts/data_source__all.sh"

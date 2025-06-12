@@ -6,11 +6,12 @@
 **/**/data/raw/
 **/**/data/processed/
 **/**/data/source/
-**/**/datasets/*
+**/**/datasets/dataset__*.py
 **/**/*.egg-info
 **/**/gen/
 **/**/logs/
-**/**/losses/*
+**/**/losses/evidential_loss*.py
+**/**/ml/*ednn_regression__*.py
 **/**/models/
 **/**/notebooks/
 **/**/output/
@@ -20,6 +21,3 @@
 **/**/viz/
 **/**/venv/
 **/**/*Zone.Identifier
-# temporary:
-**/**/ednn_regression__nmavani__func1.py
-**/**/viz__ednn_regression__nmavani__func1.py

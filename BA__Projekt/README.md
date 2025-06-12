@@ -59,6 +59,12 @@ Optional: Clean build artifacts.
 make clean
 ```
 
+Optional: Build file-set by token(s), e.g.
+```bash
+bash scripts/print__folder_contents_by_depth.sh BA__Programmierung/viz 1 | \ 
+bash scripts/create__files_by_token.sh test__ednn_regression py tests/
+```
+
 ## Changelog
 - [x] Setup basic make build, clean, init-all, init-local, init-docker.
 - [x] Start english documentation.
