@@ -1,7 +1,10 @@
-.PHONY: build-main build-training clean init-all init-local init-docker
+.PHONY: build-docs build-main build-test build-training clean init-all init-local init-docker
 
 clean:
 	bash scripts/clean__all.sh
+
+build-doc:
+	bash ./scripts/create__doc.sh
 
 build-main:
 	@echo "==> Activate python virtual environment..."
@@ -12,6 +15,12 @@ build-main:
 		pip install . --quiet \
 	"
 	ba-programmierung
+
+build-test:
+	@echo "==> Create and execute test-environment..."
+	@bash -c "source .venv/bin/activate && \
+		echo '==> Find tests and execute...' && \
+		python3 -m unittest discover -s /root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/tests -p 'test__ednn_regression__iris.py'"
 
 build-training:
 	@echo "==> Activate python virtual environment..."

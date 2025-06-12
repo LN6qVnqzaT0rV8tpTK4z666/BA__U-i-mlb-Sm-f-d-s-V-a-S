@@ -16,6 +16,7 @@ dependencies = [
     "torch",
     "scikit-learn",
     "scipy",
+    "sphinx",
     "tensorflow",
     "torchvision",
 ]
@@ -34,8 +35,7 @@ exclude = [
   "build*",
   "logs*",
   "notebooks*",
-  "scripts*",
-  "tests*"
+  "scripts*"
 ]
 
 [tool.pytest.ini_options]

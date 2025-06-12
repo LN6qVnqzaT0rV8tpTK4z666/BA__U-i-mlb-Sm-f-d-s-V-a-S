@@ -7,6 +7,7 @@
 **/**/data/processed/
 **/**/data/source/
 **/**/datasets/dataset__*.py
+**/**/docs/
 **/**/*.egg-info
 **/**/gen/
 **/**/logs/

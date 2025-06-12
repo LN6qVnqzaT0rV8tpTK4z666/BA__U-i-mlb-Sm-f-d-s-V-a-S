@@ -1,29 +1,60 @@
 #!/bin/bash
 
-# Resolve the directory of the script
+# Absolute path to this script's directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Compute the path to the data folder relative to the script
-TARGET="${SCRIPT_DIR}/../assets/data/raw"
+# Target root directory (relative to script location)
+TARGET_DIR="$SCRIPT_DIR/../assets/data/raw"
+TARGET_DIR="$(realpath "$TARGET_DIR")"
 
-# Normalize and resolve symlinks
-TARGET="$(realpath "$TARGET")"
+echo "Flattening directories under: $TARGET_DIR"
+echo
 
-# Check if the directory exists
-if [[ ! -d "$TARGET" ]]; then
-    echo "[Error] Directory '$TARGET' does not exist."
-    exit 1
-fi
+flatten_leaf() {
+    local leaf_dir="$1"
+    local moved_anything=true
 
-# Iterate over each first-level subdirectory ("leaf")
-find "$TARGET" -mindepth 1 -maxdepth 1 -type d | while read -r leaf; do
-    echo "Flattening: $leaf"
+    while $moved_anything; do
+        moved_anything=false
 
-    # Move all files from subdirectories (depth ≥ 2) into the leaf root
-    find "$leaf" -mindepth 2 -type f -exec mv -n "{}" "$leaf/" \;
+        # Find all files deeper than 1 level
+        while IFS= read -r file; do
+            filename="$(basename "$file")"
+            dest="$leaf_dir/$filename"
 
-    # Remove all empty subdirectories
-    find "$leaf" -mindepth 1 -type d -empty -delete
+            # Deduplicate if destination exists
+            if [ -e "$dest" ]; then
+                base="$filename"
+                ext=""
+
+                if [[ "$filename" == *.* ]]; then
+                    base="${filename%.*}"
+                    ext=".${filename##*.}"
+                fi
+
+                i=1
+                while [ -e "$leaf_dir/${base}__${i}${ext}" ]; do
+                    ((i++))
+                done
+                dest="$leaf_dir/${base}__${i}${ext}"
+                echo "⚠️  Renaming to avoid conflict: $filename → $(basename "$dest")"
+            fi
+
+            mv "$file" "$dest"
+            moved_anything=true
+        done < <(find "$leaf_dir" -mindepth 2 -type f)
+
+        # Remove empty directories
+        find "$leaf_dir" -type d -mindepth 1 -empty -delete
+    done
+}
+
+# Iterate over leaf dataset directories
+for leaf in "$TARGET_DIR"/*/; do
+    [ -d "$leaf" ] || continue
+    echo "🔄 Flattening: $leaf"
+    flatten_leaf "$leaf"
 done
 
-echo "Flattening complete."
+echo
+echo "✅ Done: All dataset directories have been recursively flattened with conflict resolution."
