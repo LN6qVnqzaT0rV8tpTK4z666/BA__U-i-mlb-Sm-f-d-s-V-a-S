@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/data-source__rename.sh
 
 # Absoluter oder relativer Pfad zum source-Datenordner
 DATA_DIR="$(dirname "$0")/../assets/data/source"

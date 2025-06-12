@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/data-source__move.sh
 
 # Paths
 SOURCE_DIR="../assets/data/source"

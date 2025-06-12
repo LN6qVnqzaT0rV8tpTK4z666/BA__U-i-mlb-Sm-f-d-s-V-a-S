@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/create__files_by_token.sh
 
 # Check args
 if [ $# -ne 3 ]; then

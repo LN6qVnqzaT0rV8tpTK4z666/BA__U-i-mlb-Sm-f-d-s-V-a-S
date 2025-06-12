@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+# BA__Projekt/scripts/data-source__extract_all.sh
 
 # Navigate to the project root (one level up from script location)
 cd "$(dirname "$0")" || exit 1  # ins Skriptverzeichnis wechseln
@@ -9,10 +10,11 @@ ls data_source__*.sh
 
 # Reihenfolge der auszuführenden Skripte definieren
 ordered_scripts=(
-  "data_source__rename.sh"
-  "data_source__extract_archives.sh"
-  "data_source__move.sh"
-  "data_source__flatten.sh"
+  "data-source__rename.sh"
+  "data-source__extract-archives.sh"
+  "data-source__move.sh"
+  "data-source__flatten.sh"
+  "data-source__convert.sh"
 )
 
 for script in "${ordered_scripts[@]}"; do

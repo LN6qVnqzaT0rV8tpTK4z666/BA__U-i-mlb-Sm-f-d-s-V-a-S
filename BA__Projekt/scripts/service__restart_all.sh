@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/service__restart_all.sh
 
 # Find the PID of the TensorBoard process
 PID=$(ps aux | grep '[t]ensorboard' | awk '{print $2}')

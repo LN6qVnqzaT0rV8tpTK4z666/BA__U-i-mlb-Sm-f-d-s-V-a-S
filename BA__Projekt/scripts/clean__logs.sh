@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/clean__logs.sh
 
 # Define log directory
 LOG_DIR="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/logs"

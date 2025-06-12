@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/clean__dbs.sh
 
 # Navigate to the project root (one level up from script location)
 cd "$(dirname "$0")/.."

@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/clean____pycache__.sh
 
 # Navigate to the project root (directory of the script's parent)
 cd "$(dirname "$0")/.." || exit 1

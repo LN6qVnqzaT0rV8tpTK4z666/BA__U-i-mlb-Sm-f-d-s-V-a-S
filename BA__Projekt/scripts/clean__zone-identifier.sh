@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/clean__zone-identifier.sh
 
 # Navigate to the project root
 cd "$(dirname "$0")/.."

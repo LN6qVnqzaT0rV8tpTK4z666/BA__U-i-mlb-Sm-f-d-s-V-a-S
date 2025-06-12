@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/create__doc.sh
 echo "==> Preparing Sphinx documentation..."
 #mkdir -p assets/docs/source assets/docs/build
 

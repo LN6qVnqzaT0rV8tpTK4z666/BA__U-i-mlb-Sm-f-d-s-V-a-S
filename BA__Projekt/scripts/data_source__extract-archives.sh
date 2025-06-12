@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/data-source__extract-archives.sh
 
 # Zielverzeichnis
 DATA_DIR="$(dirname "$0")/../assets/data/source"

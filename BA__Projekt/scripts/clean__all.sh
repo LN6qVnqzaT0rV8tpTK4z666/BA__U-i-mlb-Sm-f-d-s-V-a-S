@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+# BA__Projekt/scripts/clean__all.sh
 
 # Navigate to the project root (one level up from script location)
 cd "$(dirname "$0")" || exit 1  # ins Skriptverzeichnis wechseln

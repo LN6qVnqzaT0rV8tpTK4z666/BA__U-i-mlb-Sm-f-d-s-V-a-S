@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/setup__project_base_path.sh
 
 # Definiere die Zeilen, die hinzugefügt werden sollen
 export_project_base_path='export PROJECT_BASE_PATH="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/"'

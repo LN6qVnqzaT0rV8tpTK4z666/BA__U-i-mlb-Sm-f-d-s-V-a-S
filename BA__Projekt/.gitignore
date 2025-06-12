@@ -2,7 +2,8 @@
 **/**/*.venv/
 **/**/assets/
 **/**/build/
-**/**/conv/
+**/**/conv/conversion__data_txt_to_feature_txt.py
+**/**/conv/conversion__regression_no_labels.py
 **/**/data/raw/
 **/**/data/processed/
 **/**/data/source/

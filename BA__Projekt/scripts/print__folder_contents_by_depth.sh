@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/print__folder_contents_by_depth.sh
 
 print_tree() {
     local dir="$1"

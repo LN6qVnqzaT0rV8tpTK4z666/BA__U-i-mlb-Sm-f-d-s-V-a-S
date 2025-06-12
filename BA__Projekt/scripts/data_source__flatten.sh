@@ -1,4 +1,5 @@
 #!/bin/bash
+# BA__Projekt/scripts/data-source__flatten.sh
 
 # Absolute path to this script's directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
