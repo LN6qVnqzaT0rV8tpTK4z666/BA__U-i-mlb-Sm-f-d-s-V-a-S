@@ -15,6 +15,7 @@ ordered_scripts=(
   "data-source__move.sh"
   "data-source__flatten.sh"
   "data-source__convert.sh"
+  "data-source__rename-csv.sh"
 )
 
 for script in "${ordered_scripts[@]}"; do

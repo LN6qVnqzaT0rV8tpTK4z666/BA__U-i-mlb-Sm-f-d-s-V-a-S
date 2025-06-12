@@ -45,7 +45,7 @@ def derive_dataset_name(csv_path):
     return csv_path.parent.name  # e.g., dataset__boston_housing
 
 
-def db__persist(): # db__persist_all_raw_datasets()
+def db__persist():
     console = Console()
     console.log("Starte Persistierung aller Rohdaten...")
 
@@ -55,14 +55,17 @@ def db__persist(): # db__persist_all_raw_datasets()
         dataset_name = derive_dataset_name(csv_path)
         duckdb_path = DB_PATH / f"{dataset_name}.duckdb"
 
+        if duckdb_path.exists():
+            console.log(f"[yellow]⚠ DuckDB existiert bereits, überspringe:[/] {duckdb_path.name}")
+            continue
+
         console.log(f"→ Persistiere: [bold cyan]{dataset_name}[/]")
 
         con = duckdb.connect(duckdb_path)
-
         table_name = dataset_name.replace("dataset__", "").replace("-", "_")
 
         con.execute(f"""
-            CREATE OR REPLACE TABLE {table_name}_csv AS
+            CREATE TABLE {table_name}_csv AS
             SELECT * FROM read_csv_auto('{csv_path.as_posix()}')
         """)
 
@@ -81,47 +84,11 @@ def db__persist(): # db__persist_all_raw_datasets()
                 tbl_name = tbl[0]
                 console.log(f"    ↳ Importiere Tabelle: sqlite_db.{tbl_name}")
                 con.execute(f"""
-                    CREATE OR REPLACE TABLE {table_name}__{tbl_name} AS
+                    CREATE TABLE {table_name}__{tbl_name} AS
                     SELECT * FROM sqlite_db.{tbl_name}
                 """)
 
         con.close()
         console.log(f"[green]✔ Persistiert:[/] {duckdb_path.name}")
 
-    console.log("[bold green]Alle Datensätze wurden persistiert.[/]")
-
-
-def db__perstist_test():
-    console = Console()
-    console.log("Hello persistance.")
-
-    db_path__ednn_regression__iris = DB_PATH__EDNN_REGRESSION__IRIS
-    csv_path__ednn_regression__iris = CSV_PATH__EDNN_REGRESSION__IRIS
-    sqlite_path__ednn_regression__iris = SQLITE_PATH__EDNN_REGRESSION__IRIS
-
-    con = duckdb.connect(db_path__ednn_regression__iris)
-
-    con.execute(f"""
-        CREATE OR REPLACE TABLE iris_csv AS
-        SELECT * FROM read_csv_auto('{csv_path__ednn_regression__iris.as_posix()}')
-    """)
-
-    con.execute(f"""
-        ATTACH DATABASE '{sqlite_path__ednn_regression__iris.as_posix()}' AS sqlite_db (TYPE SQLITE)
-    """)
-
-    print(
-        con.execute("""
-        SELECT table_name 
-        FROM information_schema.tables 
-        WHERE table_schema = 'sqlite_db'
-    """).fetchall()
-    )
-
-    con.execute("""
-        CREATE OR REPLACE TABLE iris_sql AS
-        SELECT * FROM sqlite_db.iris
-    """)
-
-    con.close()
-    console.log(f"DuckDB gespeichert unter: {db_path__ednn_regression__iris}")
+    console.log("[bold green]Alle nicht-persistierten Datensätze wurden gespeichert.[/]")

@@ -14,11 +14,12 @@ dependencies = [
     "numpy",
     "openpyxl",
     "pandas",
-    "torch",
     "scikit-learn",
     "scipy",
+    "seaborn",
     "sphinx",
     "tensorflow",
+    "torch",
     "torchvision",
     "xlrd"
 ]

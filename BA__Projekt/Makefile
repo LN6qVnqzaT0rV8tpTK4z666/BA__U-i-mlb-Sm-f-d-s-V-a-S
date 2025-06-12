@@ -7,6 +7,8 @@ build-doc:
 	bash ./scripts/create__doc.sh
 
 build-main:
+	@bash -c "printf '\n%.0s' {1..100}"
+	$(MAKE) clean
 	@echo "==> Activate python virtual environment..."
 	@bash -c "source .venv/bin/activate && \
 		echo '==> Restarting services...' && \
