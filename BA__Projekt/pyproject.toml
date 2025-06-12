@@ -20,6 +20,7 @@ dependencies = [
     "sphinx",
     "tensorflow",
     "torchvision",
+    "xlrd"
 ]
 
 [project.scripts]

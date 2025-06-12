@@ -3,8 +3,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.utils.data import Dataset, DataLoader, random_split
-from sklearn.datasets import load_iris
+from torch.utils.data import DataLoader, random_split
 from sklearn.preprocessing import StandardScaler
 from datetime import datetime
 from torch.utils.tensorboard import SummaryWriter

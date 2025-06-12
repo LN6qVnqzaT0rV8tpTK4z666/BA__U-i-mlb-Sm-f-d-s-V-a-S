@@ -19,7 +19,7 @@ DB_PATH = ASSET_DIR / "dbs"
 
 # DATASET__BOSTON_HOUSING
 DB_PATH__BOSTON_HOUSING = DB_PATH / "dataset__boston_housing.duckdb"
-# CSV_PATH__BOSTON_HOUSING = DATA_DIR__RAW / "dataset__boston_housing" / "dataset__boston_housing.csv"
+CSV_PATH__BOSTON_HOUSING = DATA_DIR__RAW / "dataset__boston-housing" / "dataset__boston_housing.csv"
 # SQLITE_PATH__BOSTON_HOUSING = DATA_DIR__RAW / "dataset__boston_housing" / "dataset__boston_housing.sqlite"
 
 # DATASET__CIFAR10

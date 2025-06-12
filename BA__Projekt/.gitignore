@@ -13,6 +13,7 @@
 **/**/gen/
 **/**/logs/
 **/**/losses/evidential_loss*.py
+**/**/ml/*ednn_classification__*.py
 **/**/ml/*ednn_regression__*.py
 **/**/models/
 **/**/notebooks/

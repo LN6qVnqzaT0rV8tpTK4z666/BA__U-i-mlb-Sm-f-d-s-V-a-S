@@ -38,7 +38,8 @@ create-files:
 
 data-source-all:
 	@echo "==> Processing datasets in ./assets/data/sources/ ..."
-	@bash -c "bash scripts/data_source__all.sh"
+	@bash -c "source .venv/bin/activate && \
+		bash scripts/data_source__all.sh"
 
 init-all:
 	$(MAKE) init-local
