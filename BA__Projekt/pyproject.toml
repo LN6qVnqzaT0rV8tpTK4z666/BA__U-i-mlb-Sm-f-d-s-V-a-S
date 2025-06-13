@@ -14,6 +14,7 @@ dependencies = [
     "numpy",
     "openpyxl",
     "pandas",
+    "properscoring",
     "pytest",
     "ruff",
     "scikit-learn",

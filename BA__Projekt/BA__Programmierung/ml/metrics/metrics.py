@@ -11,20 +11,57 @@ Classes:
     MetricsRegistry: Singleton registry for registering and retrieving metrics.
 
 Functions:
-    accuracy, top_k_accuracy, mse, rmse, mae, mape, r2_score, nll_gaussian, energy_score
+    # Classification
+    accuracy
+    top_k_accuracy
+
+    # Regression
+    mse
+    rmse
+    mae
+    mape
+    r2_score
+
+    # Probabilistic Regression
+    nll_gaussian
+    energy_score
+    crps                 # Continuous Ranked Probability Score
+    kl_divergence        # Kullback-Leibler Divergence (for Gaussian predictions)
+
+    # Uncertainty Quantification (UQ)
+    ece
+    regression_ece
+    ace
+    brier_score
+    elbo
+    evidence
+    marginal_likelihood
+    picp
+    mpiw
+
+    # Predictive Uncertainty Metrics
+    mean_pred_variance   # Average predictive variance
+    predictive_entropy   # Predictive entropy (for classification)
+    mutual_information   # Epistemic uncertainty via mutual information (BALD)
+
+    # Variance Decomposition
+    epistemic_variance   # Epistemic uncertainty from MC predictions
+    aleatoric_variance   # Aleatoric uncertainty (model-internal)
 
 Usage:
     Register metrics for a task using `Metrics.register(...)` and
-    compute them via `metric(y_pred, y_true)`.
+    compute them via `metric(y_pred, y_true)` or via accumulation with `metric(...)` + `metric.compute()`.
 """
 
-from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Union
-
+import numpy as np
+import properscoring as ps
 import torch
 import torch.nn.functional as F
 
+from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from BA__Programmierung.util.singleton import Singleton
+from collections import defaultdict
+from typing import Callable, Dict, List, Optional, Union
 
 
 class Metric:
@@ -197,6 +234,7 @@ def accuracy(y_pred, y_true):
     """
     return (torch.argmax(y_pred, dim=1) == y_true).float().mean().item()
 
+
 def top_k_accuracy(y_pred, y_true, k=3):
     """
     Computes top-k classification accuracy.
@@ -211,17 +249,21 @@ def top_k_accuracy(y_pred, y_true, k=3):
     correct = sum(y_true[i] in topk[i] for i in range(len(y_true)))
     return correct / len(y_true)
 
+
 def mse(y_pred, y_true):
     """Mean Squared Error."""
     return F.mse_loss(y_pred, y_true).item()
+
 
 def rmse(y_pred, y_true):
     """Root Mean Squared Error."""
     return torch.sqrt(F.mse_loss(y_pred, y_true)).item()
 
+
 def mae(y_pred, y_true):
     """Mean Absolute Error."""
     return F.l1_loss(y_pred, y_true).item()
+
 
 def mape(y_pred, y_true, eps=1e-8):
     """
@@ -235,6 +277,7 @@ def mape(y_pred, y_true, eps=1e-8):
     """
     return (torch.abs((y_true - y_pred) / (y_true + eps)).mean() * 100).item()
 
+
 def r2_score(y_pred, y_true):
     """
     Coefficient of Determination (R²).
@@ -246,6 +289,7 @@ def r2_score(y_pred, y_true):
     ss_tot = torch.sum((y_true - torch.mean(y_true)) ** 2)
     return (1 - ss_res / ss_tot).item()
 
+
 def nll_gaussian(mean, logvar, target):
     """
     Negative Log-Likelihood for a Gaussian distribution.
@@ -255,6 +299,7 @@ def nll_gaussian(mean, logvar, target):
     """
     precision = torch.exp(-logvar)
     return 0.5 * torch.mean(precision * (target - mean) ** 2 + logvar).item()
+
 
 def energy_score(y_samples, y_true):
     """
@@ -274,6 +319,175 @@ def energy_score(y_samples, y_true):
     return (t1 - 0.5 * t2).item()
 
 
+def ece(y_pred, y_true, n_bins=10):
+    """
+    Expected Calibration Error (ECE) für Regressionsmodelle.
+    """
+    confidences = torch.max(y_pred, dim=1).values
+    predictions = torch.argmax(y_pred, dim=1)
+    accuracies = predictions.eq(y_true)
+
+    ece = torch.zeros(1, device=y_pred.device)
+    bin_boundaries = torch.linspace(0, 1, n_bins + 1, device=y_pred.device)
+
+    for i in range(n_bins):
+        mask = (confidences > bin_boundaries[i]) & (confidences <= bin_boundaries[i + 1])
+        if mask.any():
+            acc = accuracies[mask].float().mean()
+            conf = confidences[mask].mean()
+            ece += (conf - acc).abs() * mask.float().mean()
+
+    return ece.item()
+
+
+def regression_ece(y_pred_mean, y_pred_std, y_true, n_bins=10):
+    """
+    Calibration Error für Regression, basierend auf Vorhersage-Unsicherheit.
+
+    Args:
+        y_pred_mean (Tensor): Erwartete Werte.
+        y_pred_std (Tensor): Standardabweichungen (Unsicherheit).
+        y_true (Tensor): Wahre Werte.
+        n_bins (int): Anzahl Konfidenzintervalle.
+
+    Returns:
+        float: Expected Calibration Error.
+    """
+    probs = torch.distributions.Normal(y_pred_mean, y_pred_std).cdf(y_true)
+    errors = torch.abs(probs - 0.5) * 2  # Erwartungswert bei perfekter Kalibrierung: 0.5
+
+    bins = torch.linspace(0, 1, n_bins + 1)
+    bin_ids = torch.bucketize(probs, bins)
+
+    ece = 0.0
+    for i in range(1, n_bins + 1):
+        mask = bin_ids == i
+        if mask.any():
+            bin_conf = (bins[i] + bins[i - 1]) / 2
+            bin_acc = (probs[mask] < bins[i]).float().mean().item()
+            ece += abs(bin_acc - bin_conf) * mask.float().mean().item()
+    return ece
+
+
+def ace(y_pred, y_true, n_bins=10):
+    """
+    Adaptive Calibration Error (ACE).
+    """
+    confidences = torch.max(y_pred, dim=1).values
+    predictions = torch.argmax(y_pred, dim=1)
+    accuracies = predictions.eq(y_true)
+
+    sorted_conf, sorted_idx = torch.sort(confidences)
+    sorted_acc = accuracies[sorted_idx]
+    bins = torch.chunk(sorted_conf, n_bins)
+    acc_bins = torch.chunk(sorted_acc, n_bins)
+
+    ace = 0
+    for b_conf, b_acc in zip(bins, acc_bins):
+        if len(b_conf) > 0:
+            acc = b_acc.float().mean()
+            conf = b_conf.mean()
+            ace += (acc - conf).abs()
+    return (ace / n_bins).item()
+
+
+def brier_score(y_pred, y_true):
+    """
+    Brier Score für probabilistische Klassifikation.
+    """
+    y_true_oh = F.one_hot(y_true, num_classes=y_pred.shape[1]).float()
+    return torch.mean((y_pred - y_true_oh) ** 2).item()
+
+
+def elbo(y_pred, y_true, kl_div):
+    """
+    Evidence Lower Bound Loss (negativer ELBO).
+    """
+    nll = evidential_loss(y_pred, y_true)
+    return (nll + kl_div).item()
+
+
+def evidence(y_pred):
+    """
+    Erwartete Evidenz: Summe der Alphas (Dirichlet-Parameter).
+    """
+    alpha = y_pred + 1  # Ensure alphas > 1
+    return alpha.sum(dim=1).mean().item()
+
+
+def marginal_likelihood(y_pred, y_true):
+    """
+    Marginale Likelihood-Schätzung.
+    """
+    alpha = y_pred + 1
+    S = torch.sum(alpha, dim=1, keepdim=True)
+    likelihood = torch.exp(torch.lgamma(S) - torch.lgamma(alpha).sum(dim=1, keepdim=True))
+    return likelihood.mean().item()
+
+
+def picp(y_lower, y_upper, y_true):
+    """
+    Prediction Interval Coverage Probability (PICP).
+    """
+    covered = ((y_true >= y_lower) & (y_true <= y_upper)).float()
+    return covered.mean().item()
+
+
+def mpiw(y_lower, y_upper):
+    """
+    Mean Prediction Interval Width (MPIW).
+    """
+    return (y_upper - y_lower).mean().item()
+
+
+# Continuous Ranked Probability Score (CRPS)
+def continuous_ranked_probability_score(pred_mean: np.ndarray, pred_std: np.ndarray, y_true: np.ndarray) -> float:
+    """Compute CRPS for Gaussian predictions"""
+    return np.mean(ps.crps_gaussian(y_true, mu=pred_mean, sig=pred_std))
+
+
+# # KL-Divergenz
+def kl_divergence_normal(pred_mean: np.ndarray, pred_std: np.ndarray, ref_mean: np.ndarray, ref_std: np.ndarray) -> float:
+    """KL divergence between two Gaussians (prediction vs reference)"""
+    var_ratio = (pred_std ** 2) / (ref_std ** 2)
+    kl = np.log(ref_std / pred_std) + (var_ratio + (pred_mean - ref_mean) ** 2 / (ref_std ** 2) - 1) / 2
+    return np.mean(kl)
+
+
+# Mittlere Vorhergesagte Varianz
+def mean_pred_variance(pred_std: np.ndarray, **kwargs) -> float:
+    """Mean predictive variance (aleatoric + epistemic)"""
+    return float(np.mean(pred_std ** 2))
+
+
+# Entropie der Vorhersage (Klassifikation)
+def predictive_entropy(pred_probs: np.ndarray, **kwargs) -> float:
+    """Entropy of the predictive distribution (for classification)"""
+    entropy = -np.sum(pred_probs * np.log(pred_probs + 1e-12), axis=1)
+    return float(np.mean(entropy))
+
+
+# Epistemic uncertainty
+def mutual_information(pred_probs: np.ndarray, **kwargs) -> float:
+    """Epistemic uncertainty estimate via Mutual Information"""
+    mean_probs = np.mean(pred_probs, axis=0)
+    entropy_mean = -np.sum(mean_probs * np.log(mean_probs + 1e-12))
+    mean_entropy = np.mean([-np.sum(p * np.log(p + 1e-12)) for p in pred_probs])
+    return float(entropy_mean - mean_entropy)
+
+
+# Varianz-Dekomposition, Epistemische Varianz
+def epistemic_variance(mc_preds: np.ndarray, **kwargs) -> float:
+    """Epistemic variance: Varianz über Modelle (MC-Samples)"""
+    return float(np.mean(np.var(mc_preds, axis=0)))
+
+
+# Varianz-Dekomposition, Aleartorische Varianz
+def aleatoric_variance(pred_std: np.ndarray, **kwargs) -> float:
+    """Aleatoric variance: Modellinterne Unsicherheit"""
+    return float(np.mean(pred_std ** 2))
+
+
 # ───── Register Metrics ───── #
 
 Metrics.register("classification", accuracy, accumulate=True)
@@ -287,7 +501,30 @@ Metrics.register("regression", r2_score, name="r2_score", accumulate=True)
 
 Metrics.register("uq", nll_gaussian, accumulate=True)
 Metrics.register("uq", energy_score, accumulate=True)
+Metrics.register("uq", ece, accumulate=True)
+Metrics.register("uq", ace, accumulate=True)
+Metrics.register("uq", regression_ece, accumulate=True)
+Metrics.register("uq", brier_score, accumulate=True)
+Metrics.register("uq", elbo, accumulate=True)
+Metrics.register("uq", evidence, accumulate=True)
+Metrics.register("uq", marginal_likelihood, accumulate=True)
+Metrics.register("uq", picp, accumulate=True)
+Metrics.register("uq", mpiw, accumulate=True)
 
+Metrics.register("uq", continuous_ranked_probability_score, accumulate=True)
+Metrics.register("uq", kl_divergence_normal, accumulate=True)
+
+Metrics.register("uq", mean_pred_variance, accumulate=True)
+Metrics.register("uq", predictive_entropy, accumulate=True)
+Metrics.register("uq", mutual_information, accumulate=True)
+
+Metrics.register("uq", epistemic_variance, accumulate=True)
+Metrics.register("uq", aleatoric_variance, accumulate=True)
+
+# Metrics.register("uq", latent_function, accumulate=True)
+# Metrics.register("uq", cov_train, name="cov_train", accumulate=True)
+# Metrics.register("uq", cov_test, name="cov_test", accumulate=True)
+# Metrics.register("uq", cross_cov, name="cross_cov", accumulate=True)
 
 # ───── Example Usage ───── #
 
