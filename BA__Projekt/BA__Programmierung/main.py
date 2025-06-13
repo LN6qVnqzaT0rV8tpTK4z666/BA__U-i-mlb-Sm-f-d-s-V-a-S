@@ -10,12 +10,25 @@ os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"  # Disable oneDNN custom op warnings
 import importlib
 import time
 
-from BA__Programmierung.config import ML_DIR
-from db.persist import db__persist
-
-# from ml.ednn_regression__iris import main as ednn__main
 from rich.console import Console
-# from viz.viz__ednn_regression__iris import main as ednn__viz
+
+from BA__Programmierung.config import ML_DIR
+from BA__Programmierung.db.persist import db__persist
+
+# Define tokens for which training and viz should be skipped, add your manual tokens here, e.g.:
+SKIP_TOKENS = {
+    "boston_housing",
+    "combined_cycle_power_plant",
+    "concrete_compressive_strength",
+    "condition_based_maintenance_of_naval_propulsion_plants",
+    "energy_efficiency",
+    "fmnist",
+    "iris",
+    "kin8nm",
+    "nmavani_func1",
+    "wine_quality_red",
+    # "wine_quality_white"
+}
 
 
 def get_target_keys():
@@ -60,6 +73,10 @@ def main():
     console.log(target_keys)
 
     for key in target_keys:
+        if key in SKIP_TOKENS:
+            console.log(f"[yellow]Skipping training and visualization for: {key}[/yellow]")
+            continue
+
         ml_module = f"ml.ednn_regression__{key}"
         viz_module = f"viz.viz__ednn_regression__{key}"
 

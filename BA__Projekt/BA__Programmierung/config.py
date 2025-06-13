@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-
 # FILEPATHS
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,7 +42,7 @@ CSV_PATH__CONDITION_BASED_MAINTENANCE_OF_NAVAL_PROPULSION_PLANTS = DATA_DIR__RAW
 # SQLITE_PATH__CONDITION_BASED_MAINTENANCE_OF_NAVAL_PROPULSION_PLANTS = DATA_DIR__RAW / "dataset__condition_based_maintenance_of_naval_propulsion_plants" / "database.sqlite"
 
 # DATASET__GENERATED__MAVANI__FUNC_1
-DB_PATH__GENERATED__MAVANI__FUNC_1 = DB_PATH / "dataset__generated-nmavani-func_1.duckdb"
+DB_PATH__GENERATED__MAVANI__FUNC_1 = DB_PATH / "dataset__generated__nmavani__func_1.duckdb"
 CSV_PATH__GENERATED__MAVANI__FUNC_1 = DATA_DIR__RAW / "dataset__generated-nmavani-func_1" / "dataset__generated-nmavani-func_1.csv"
 # SQLITE_PATH__GENERATED__MAVANI__FUNC_1 = DATA_DIR__RAW / "dataset__generated__nmavani__func_1" / "database.sqlite"
 

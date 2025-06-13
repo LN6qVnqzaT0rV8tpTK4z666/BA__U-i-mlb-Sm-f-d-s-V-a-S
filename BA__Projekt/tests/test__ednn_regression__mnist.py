@@ -1,10 +1,11 @@
 # BA__Projekt/tests/test__ednn_regression__mnist.py
 
 import unittest
-import torch
 
-from torchvision import datasets, transforms
+import torch
 from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
+
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
 

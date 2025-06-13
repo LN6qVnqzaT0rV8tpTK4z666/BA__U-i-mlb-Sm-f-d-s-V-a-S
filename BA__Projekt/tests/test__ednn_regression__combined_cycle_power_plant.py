@@ -1,13 +1,15 @@
 # BA__Projekt/tests/test__ednn_regression__combined_cycle_power_plant.py
 
-import numpy as np
-import torch
 import unittest
 
-from BA__Programmierung.ml.datasets.dataset__torch__combined_cycle_power_plant import DatasetTorchCombinedCyclePowerPlant
+import torch
+from torch.utils.data import DataLoader
+
+from BA__Programmierung.ml.datasets.dataset__torch__combined_cycle_power_plant import (
+    DatasetTorchCombinedCyclePowerPlant,
+)
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
-from torch.utils.data import DataLoader
 
 
 class TestEvidentialRegressionCombinedCyclePowerPlant(unittest.TestCase):

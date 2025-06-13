@@ -1,12 +1,15 @@
 # BA__Projekt/tests/test__ednn_regression__wine_quality_red.py
 
 import unittest
-import torch
 
-from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_red import WineQualityDataset
+import torch
+from torch.utils.data import DataLoader
+
+from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_red import (
+    WineQualityDataset,
+)
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
-from torch.utils.data import DataLoader
 
 
 class TestEvidentialRegressionWineQualityRed(unittest.TestCase):
@@ -14,8 +17,9 @@ class TestEvidentialRegressionWineQualityRed(unittest.TestCase):
     def setUpClass(cls):
         cls.device = "cpu"
         cls.dataset = WineQualityDataset(
-            db_path="/root/BA__Projekt/assets/dbs/dataset__wine_quality_red__dataset.duckdb",
-            table_name="wine_quality_red__dataset_csv"
+            csv_path="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/data/raw/dataset__wine-quality/winequality-red.csv",
+            # db_path="/root/BA__Projekt/assets/dbs/dataset__wine_quality_red__dataset.duckdb",
+            # table_name="wine_quality_red__dataset_csv"
         )
         cls.loader = DataLoader(cls.dataset, batch_size=32, shuffle=False)
         cls.model = EvidentialNet(input_dim=11).to(cls.device)  # Wine Quality Red typically has 11 features

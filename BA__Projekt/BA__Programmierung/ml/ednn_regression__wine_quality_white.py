@@ -1,14 +1,20 @@
 # BA__Projekt/BA__Programmierung/ml/ednn_regression__wine-quality-white.py
 
 import os
+
 import torch
 
-from BA__Programmierung.ml.losses.evidential_loss__nll_reg import evidential_regression_loss
-from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import load_wine_quality_white_dataset
-from models.model__ednn_basic import EvidentialNet
 # from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
 # from models.model__ednn_deep_dropout import EvidentialNetDeep as EvidentialNet
-from torch.utils.data import random_split, DataLoader
+from torch.utils.data import DataLoader, random_split
+
+from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import (
+    load_wine_quality_white_dataset,
+)
+from BA__Programmierung.ml.losses.evidential_loss__nll_reg import (
+    evidential_regression_loss,
+)
+from models.model__ednn_basic import EvidentialNet
 
 
 def train_model(model, dataloader, optimizer, device):

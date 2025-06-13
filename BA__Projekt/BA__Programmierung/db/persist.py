@@ -1,19 +1,16 @@
 # BA__Projekt/BA__Programmierung/db/persist.py
 
-import duckdb
-
-from BA__Programmierung.config import (
-    DB_PATH,
-    DATA_DIR__RAW,
-    DB_PATH__EDNN_REGRESSION__IRIS,
-    CSV_PATH__EDNN_REGRESSION__IRIS,
-    SQLITE_PATH__EDNN_REGRESSION__IRIS,
-    LOGS_DIR,
-)
 from datetime import datetime
+
+import duckdb
 from loguru import logger
 from rich.console import Console
 
+from BA__Programmierung.config import (
+    DATA_DIR__RAW,
+    DB_PATH,
+    LOGS_DIR,
+)
 
 # Setup Logging
 LOGS_DIR.mkdir(parents=True, exist_ok=True)

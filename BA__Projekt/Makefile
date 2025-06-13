@@ -9,6 +9,8 @@ build-doc:
 build-main:
 	@bash -c "printf '\n%.0s' {1..100}"
 	$(MAKE) clean
+	@echo "==> Ruff **/**/*.py check..."
+	$(MAKE) ruff
 	@echo "==> Activate python virtual environment..."
 	@bash -c "source .venv/bin/activate && \
 		echo '==> Restarting services...' && \
@@ -17,12 +19,14 @@ build-main:
 		pip install . --quiet \
 	"
 	ba-programmierung
-
+	sleep 1
+	$(MAKE) build-test
+	
 build-test:
 	@echo "==> Create and execute test-environment..."
 	@bash -c "source .venv/bin/activate && \
 		echo '==> Find tests and execute...' && \
-		python3 -m unittest discover -s /root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/tests -p 'test__ednn_regression__iris.py'"
+		sh scripts/test__all.sh"
 
 build-training:
 	@echo "==> Activate python virtual environment..."
@@ -92,3 +96,6 @@ init-local:
 	. .venv/bin/activate && ba-programmierung
 
 	bash scripts/clean__egg_info.sh
+
+ruff:
+	ruff check . --fix

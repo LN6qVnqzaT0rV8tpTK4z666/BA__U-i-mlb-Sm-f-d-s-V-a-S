@@ -1,17 +1,19 @@
 # BA__Projekt/BA__Programmierung/ml/ednn_regression__iris.py
 
 import os
+from datetime import datetime
+
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-import matplotlib.pyplot as plt
-
-from BA__Programmierung.ml.datasets.dataset__torch__duckdb_iris import DatasetTorchDuckDBIris
-from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
-from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
-
-from datetime import datetime
 from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
+
+from BA__Programmierung.ml.datasets.dataset__torch__duckdb_iris import (
+    DatasetTorchDuckDBIris,
+)
+from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
+from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
 
 
 def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device="cpu"):

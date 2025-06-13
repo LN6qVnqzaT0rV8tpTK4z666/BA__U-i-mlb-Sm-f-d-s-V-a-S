@@ -26,6 +26,7 @@
 **/**/venv/
 **/**/*Zone.Identifier
 # temp:
+!BA__Programmierung/ml/datasets/dataset__torch__base_tabular.py
 !BA__Programmierung/ml/datasets/dataset__torch__wine_quality_white.py
 !BA__Programmierung/ml/ednn_regression__wine_quality_white.py
 !BA__Programmierung/viz/viz__ednn_regression__wine_quality_white.py

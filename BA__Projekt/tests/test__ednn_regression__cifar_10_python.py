@@ -1,13 +1,15 @@
 # BA__Projekt/tests/test__ednn_regression__cifar_10_python.py
 
-import numpy as np
-import torch
 import unittest
 
-from BA__Programmierung.ml.datasets.dataset__torch__cifar_10_python import DatasetTorchCIFAR10AllBatches
+import torch
+from torch.utils.data import DataLoader
+
+from BA__Programmierung.ml.datasets.dataset__torch__cifar_10_python import (
+    DatasetTorchCIFAR10AllBatches,
+)
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
-from torch.utils.data import DataLoader
 
 
 class TestEvidentialRegressionCIFAR10(unittest.TestCase):

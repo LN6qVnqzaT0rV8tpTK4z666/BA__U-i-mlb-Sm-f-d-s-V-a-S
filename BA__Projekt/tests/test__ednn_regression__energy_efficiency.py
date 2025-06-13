@@ -1,12 +1,15 @@
 # BA__Projekt/tests/test__ednn_regression__energy_efficiency.py
 
-import torch
 import unittest
 
-from BA__Programmierung.ml.datasets.dataset__torch__energy_efficiency import load_energy_efficiency_dataset
+import torch
+from torch.utils.data import DataLoader
+
+from BA__Programmierung.ml.datasets.dataset__torch__energy_efficiency import (
+    load_energy_efficiency_dataset,
+)
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
-from torch.utils.data import DataLoader
 
 
 class TestEvidentialRegressionEnergyEfficiency(unittest.TestCase):

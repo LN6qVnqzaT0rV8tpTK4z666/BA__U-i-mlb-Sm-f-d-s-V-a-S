@@ -1,16 +1,19 @@
 # BA__Projekt/BA__Programmierung/viz/test__ednn_regression__wine-quality-white.py
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 import torch
-from sklearn.metrics import r2_score, mean_absolute_percentage_error
+from sklearn.metrics import mean_absolute_percentage_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader
 
-from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import WineQualityWhiteDataset
-from models.model__ednn_basic import EvidentialNet
 from BA__Programmierung.config import VIZ_PATH
+from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import (
+    WineQualityWhiteDataset,
+)
+from models.model__ednn_basic import EvidentialNet
 
 
 def evaluate_and_save_dashboard(model, dataloader, scaler_y, device, save_dir):

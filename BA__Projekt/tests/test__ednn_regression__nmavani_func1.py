@@ -1,12 +1,19 @@
 # BA__Projekt/tests/test__ednn_regression__nmavani_func1.py
 
 import unittest
-import torch
 
-from BA__Programmierung.ml.datasets.dataset__torch__nmavani_func1 import DatasetTorchDuckDBFunc1
+import torch
+from torch.utils.data import DataLoader
+
+from BA__Programmierung.config import (
+    CSV_PATH__GENERATED__MAVANI__FUNC_1,
+    DB_PATH__GENERATED__MAVANI__FUNC_1,
+)
+from BA__Programmierung.ml.datasets.dataset__torch__nmavani_func1 import (
+    DatasetTorchDuckDBFunc1,
+)
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
-from torch.utils.data import DataLoader
 
 
 class TestEvidentialRegressionNmavaniFunc1(unittest.TestCase):
@@ -14,8 +21,8 @@ class TestEvidentialRegressionNmavaniFunc1(unittest.TestCase):
     def setUpClass(cls):
         cls.device = "cpu"
         cls.dataset = DatasetTorchDuckDBFunc1(
-            db_path="/root/BA__Projekt/assets/dbs/dataset__nmavani_func1__dataset.duckdb",
-            table_name="nmavani_func1__dataset_csv"
+            db_path=DB_PATH__GENERATED__MAVANI__FUNC_1,
+            table_name=CSV_PATH__GENERATED__MAVANI__FUNC_1
         )
         cls.loader = DataLoader(cls.dataset, batch_size=32, shuffle=False)
         cls.model = EvidentialNet(input_dim=1).to(cls.device)  # Assuming single input feature

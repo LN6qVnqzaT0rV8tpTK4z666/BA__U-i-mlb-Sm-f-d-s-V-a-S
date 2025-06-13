@@ -1,6 +1,7 @@
 # BA__Projekt/BA__Programmierung/conv/conversion__txt_to_csv.py
 
 import os
+
 import pandas as pd
 
 
@@ -8,11 +9,11 @@ def convert_txt_to_csv(txt_path, output_path):
     try:
         # Attempt to read with utf-8
         try:
-            with open(txt_path, "r", encoding="utf-8") as file:
+            with open(txt_path, encoding="utf-8") as file:
                 lines = file.readlines()
         except UnicodeDecodeError:
             # Fallback to latin1
-            with open(txt_path, "r", encoding="latin1") as file:
+            with open(txt_path, encoding="latin1") as file:
                 lines = file.readlines()
             print(f"⚠️  Fallback to latin1 encoding for: {txt_path}")
 

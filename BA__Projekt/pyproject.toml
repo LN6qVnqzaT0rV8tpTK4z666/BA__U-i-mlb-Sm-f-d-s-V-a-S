@@ -14,6 +14,8 @@ dependencies = [
     "numpy",
     "openpyxl",
     "pandas",
+    "pytest",
+    "ruff",
     "scikit-learn",
     "scipy",
     "seaborn",
@@ -44,4 +46,31 @@ exclude = [
 [tool.pytest.ini_options]
 env = [
     "PROJECT_BASE_PATH=/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/"
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+lint.select = [
+  "F", 
+  "E", 
+  "W", 
+  "I", 
+  "N", 
+  "UP", 
+  "C90"
+]
+lint.ignore = [
+  "E501", 
+  "F841", 
+  "D100", 
+  "D101", 
+  "D102", 
+  "D103", 
+  "D104", 
+  "D105", 
+  "D106", 
+  "D107",
+  "N806",
+  "N999"
 ]

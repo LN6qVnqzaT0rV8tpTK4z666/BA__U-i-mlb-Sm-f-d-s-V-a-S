@@ -1,13 +1,15 @@
 # BA__Projekt/tests/test__ednn_regression__boston_housing.py
 
-import numpy as np
-import torch
 import unittest
 
-from BA__Programmierung.ml.datasets.dataset__torch__boston_housing import DatasetTorchBostonHousing
+import torch
+from torch.utils.data import DataLoader
+
+from BA__Programmierung.ml.datasets.dataset__torch__boston_housing import (
+    DatasetTorchBostonHousing,
+)
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
-from torch.utils.data import DataLoader
 
 
 class TestEvidentialRegressionBostonHousing(unittest.TestCase):
@@ -15,8 +17,8 @@ class TestEvidentialRegressionBostonHousing(unittest.TestCase):
     def setUpClass(cls):
         cls.device = "cpu"
         cls.dataset = DatasetTorchBostonHousing(
-            db_path="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/dbs/dataset__boston_housing__dataset.duckdb",
-            table_name="boston_housing__dataset_csv"
+            # db_path="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/dbs/dataset__boston_housing__dataset.duckdb",
+            # table_name="boston_housing__dataset_csv"
         )
         cls.loader = DataLoader(cls.dataset, batch_size=32, shuffle=False)
         cls.model = EvidentialNet(input_dim=13).to(cls.device)

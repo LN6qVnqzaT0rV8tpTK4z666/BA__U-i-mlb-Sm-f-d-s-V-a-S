@@ -1,11 +1,13 @@
-import torch
-import pytest
 import numpy as np
-from torch.utils.data import DataLoader
+import pytest
+import torch
+from sklearn.metrics import mean_absolute_percentage_error, r2_score
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import r2_score, mean_absolute_percentage_error
+from torch.utils.data import DataLoader
 
-from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import WineQualityWhiteDataset
+from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import (
+    WineQualityWhiteDataset,
+)
 from models.model__ednn_basic import EvidentialNet
 
 
