@@ -1,6 +1,6 @@
 # BA__Projekt/BA__Programmierung/ml/losses/evidential_loss.py
+
 import torch
-import torch.nn.functional as F
 
 
 def evidential_loss(y, mu, v, alpha, beta, lambda_coef=1.0):

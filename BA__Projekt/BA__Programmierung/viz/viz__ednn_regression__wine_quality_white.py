@@ -12,6 +12,7 @@ from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import Wi
 from models.model__ednn_basic import EvidentialNet
 from BA__Programmierung.config import VIZ_PATH
 
+
 def evaluate_and_save_dashboard(model, dataloader, scaler_y, device, save_dir):
     model.eval()
     mu_list, v_list, alpha_list, beta_list, targets_list = [], [], [], [], []
@@ -141,7 +142,7 @@ def main():
 
     model = EvidentialNet(input_dim).to(device)
     model.load_state_dict(torch.load(
-        "models/ednn__wine-quality-white.pt",
+        "assets/pth/ednn_regression__wine_quality_white/ednn__wine-quality-white.pt",
         map_location=device
     ))
 

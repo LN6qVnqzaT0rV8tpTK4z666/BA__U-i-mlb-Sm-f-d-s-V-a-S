@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import r2_score, mean_absolute_percentage_error
 
 from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import WineQualityWhiteDataset
-from models.ednn_basic import EvidentialNet  # <- changed from WineRegressor to EvidentialNet
+from models.model__ednn_basic import EvidentialNet
 
 
 @pytest.fixture(scope="module")

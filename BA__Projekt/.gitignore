@@ -17,13 +17,11 @@
 !**/**/metrics/__init__.py
 **/**/ml/*ednn_classification__*.py
 **/**/ml/*ednn_regression__*.py
-**/**/models/
-**/**/models/**/**.pth
+**/**/models/*
 **/**/notebooks/
 **/**/output/
 **/**/*png
 **/**/__pycache__/
-**/**/tests/*
 **/**/viz/*
 **/**/venv/
 **/**/*Zone.Identifier

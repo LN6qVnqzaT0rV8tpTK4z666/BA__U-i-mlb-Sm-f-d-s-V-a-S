@@ -1,26 +1,17 @@
 # BA__Projekt/BA__Programmierung/ml/ednn_regression__iris.py
 
+import os
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from torch.utils.data import DataLoader, random_split
-from sklearn.preprocessing import StandardScaler
-from datetime import datetime
-from torch.utils.tensorboard import SummaryWriter
-import os
 import matplotlib.pyplot as plt
-from tensorboard.backend.event_processing import event_accumulator
 
-
-from BA__Programmierung.ml.datasets.dataset__torch_duckdb_iris import DatasetTorchDuckDBIris
-# from models.model__ednn_basic import EvidentialNet
-from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
+from BA__Programmierung.ml.datasets.dataset__torch__duckdb_iris import DatasetTorchDuckDBIris
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
+from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
 
-
-# ============
-# Training
-# ============
+from datetime import datetime
+from torch.utils.data import DataLoader, random_split
+from torch.utils.tensorboard import SummaryWriter
 
 
 def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device="cpu"):
@@ -34,6 +25,12 @@ def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device="cpu"):
     writer = SummaryWriter(log_dir=log_dir)
 
     model.to(device)
+
+    best_val_loss = float("inf")
+    epochs_no_improve = 0
+    patience = 5
+    model_save_path = "/root/BA__Projekt/assets/models/pth/ednn_regression__iris/ednn_regression__iris.pth"
+    os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
 
     for epoch in range(epochs):
         model.train()
@@ -51,35 +48,42 @@ def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device="cpu"):
         avg_loss = total_loss / len(train_loader)
         writer.add_scalar("Loss/train", avg_loss, epoch)
 
-        # Optional: Add val loss tracking
-        if val_loader:
-            model.eval()
-            val_loss = 0.0
-            with torch.no_grad():
-                for X_val, y_val in val_loader:
-                    X_val, y_val = X_val.to(device), y_val.to(device)
-                    mu, v, alpha, beta = model(X_val)
-                    loss = evidential_loss(y_val, mu, v, alpha, beta)
-                    val_loss += loss.item()
-            avg_val_loss = val_loss / len(val_loader)
-            writer.add_scalar("Loss/val", avg_val_loss, epoch)
+        # === Validation ===
+        model.eval()
+        val_loss = 0.0
+        with torch.no_grad():
+            for X_val, y_val in val_loader:
+                X_val, y_val = X_val.to(device), y_val.to(device)
+                mu, v, alpha, beta = model(X_val)
+                loss = evidential_loss(y_val, mu, v, alpha, beta)
+                val_loss += loss.item()
+        avg_val_loss = val_loss / len(val_loader)
+        writer.add_scalar("Loss/val", avg_val_loss, epoch)
 
-        print(f"Epoch {epoch + 1}/{epochs} - Train Loss: {avg_loss:.4f}")
+        print(f"Epoch {epoch + 1}/{epochs} - Train Loss: {avg_loss:.4f} - Val Loss: {avg_val_loss:.4f}")
+
+        # === Early Stopping ===
+        if avg_val_loss < best_val_loss:
+            best_val_loss = avg_val_loss
+            epochs_no_improve = 0
+            torch.save(model.state_dict(), model_save_path)
+            print(f"Validation improved. Model saved to {model_save_path}")
+        else:
+            epochs_no_improve += 1
+            print(f"No improvement for {epochs_no_improve} epoch(s).")
+            if epochs_no_improve >= patience:
+                print("Early stopping triggered!")
+                break
 
     writer.close()
-
-
-# ============
-# Main
-# ============
 
 
 def main():
     dataset = DatasetTorchDuckDBIris(
         db_path="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/dbs/dataset__iris__dataset.duckdb",
-        table_name="iris__dataset_csv"
+        table_name="iris__dataset_csv",
     )
-    
+
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
     train_set, val_set = random_split(dataset, [train_size, val_size])
@@ -87,8 +91,9 @@ def main():
     train_loader = DataLoader(train_set, batch_size=16, shuffle=True)
     val_loader = DataLoader(val_set, batch_size=16)
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = EvidentialNet(input_dim=4)
-    train(model, train_loader, val_loader, epochs=100)
+    train(model, train_loader, val_loader, epochs=100, device=device)
 
 
 if __name__ == "__main__":

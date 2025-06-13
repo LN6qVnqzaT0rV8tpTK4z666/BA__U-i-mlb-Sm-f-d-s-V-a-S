@@ -11,10 +11,14 @@ class WineQualityWhiteDataset(Dataset):
     def __init__(self, csv_path):
         if not os.path.isfile(csv_path):
             raise FileNotFoundError(f"File not found: {csv_path}")
-        
-        df = pd.read_csv(csv_path, sep=';')
-        self.features = torch.tensor(df.iloc[:, :-1].values, dtype=torch.float32)
-        self.labels = torch.tensor(df.iloc[:, -1].values, dtype=torch.long)  # classification target
+
+        df = pd.read_csv(csv_path, sep=";")
+        self.features = torch.tensor(
+            df.iloc[:, :-1].values, dtype=torch.float32
+        )
+        self.labels = torch.tensor(
+            df.iloc[:, -1].values, dtype=torch.long
+        )  # classification target
 
     def __len__(self):
         return len(self.labels)
