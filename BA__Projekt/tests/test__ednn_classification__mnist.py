@@ -1,32 +1,41 @@
-# BA__Projekt/tests/test__ednn_regression__cifar_10_python.py
+# BA__Projekt/tests/test__ednn_classification__mnist.py
 
 import unittest
 
 import torch
 from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 
-from BA__Programmierung.ml.datasets.dataset__torch__cifar_10_python import (
-    DatasetTorchCIFAR10AllBatches,
-)
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
 
 
-class TestEvidentialRegressionCIFAR10(unittest.TestCase):
+class TestEvidentialRegressionMNIST(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.device = "cpu"
-        cls.dataset = DatasetTorchCIFAR10AllBatches(
-            db_path="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/dbs/dataset__cifar_10__dataset.duckdb",
-            table_name="cifar_10__dataset_csv"
+
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5,), (0.5,))
+        ])
+
+        cls.dataset = datasets.MNIST(
+            root="/root/BA__Projekt/assets/data/raw/",
+            train=True,
+            download=True,
+            transform=transform
         )
+
         cls.loader = DataLoader(cls.dataset, batch_size=32, shuffle=False)
-        cls.model = EvidentialNet(input_dim=3072).to(cls.device)  # CIFAR-10 flattened (32x32x3)
+        cls.model = EvidentialNet(input_dim=28 * 28).to(cls.device)
         cls.model.eval()
 
     def test_forward_output_shapes(self):
-        for X, _ in self.loader:
-            X = X.to(self.device)
+        for X, y in self.loader:
+            X, y = X.to(self.device), y.to(self.device).float().unsqueeze(1)
+            X = X.view(X.size(0), -1)
+
             mu, v, alpha, beta = self.model(X)
 
             self.assertEqual(mu.shape, (X.shape[0], 1), "mu shape mismatch")
@@ -38,6 +47,8 @@ class TestEvidentialRegressionCIFAR10(unittest.TestCase):
     def test_output_ranges(self):
         for X, _ in self.loader:
             X = X.to(self.device)
+            X = X.view(X.size(0), -1)
+
             _, v, alpha, beta = self.model(X)
 
             self.assertTrue(torch.all(v > 0), "v should be positive")
@@ -47,7 +58,10 @@ class TestEvidentialRegressionCIFAR10(unittest.TestCase):
 
     def test_loss_computation(self):
         for X, y in self.loader:
-            X, y = X.to(self.device), y.to(self.device)
+            X = X.to(self.device)
+            y = y.to(self.device).float().unsqueeze(1)
+            X = X.view(X.size(0), -1)
+
             mu, v, alpha, beta = self.model(X)
             loss = evidential_loss(y, mu, v, alpha, beta)
             self.assertIsInstance(loss.item(), float)

@@ -1,5 +1,4 @@
-# BA__Projekt/BA__Programmierung/ml/datasets/dataset__torch__wine_quality_white.py
-
+# BA__Projekt/BA__Programmierung/ml/datasets/dataset__torch__wine_quality.py
 import os
 
 import pandas as pd
@@ -9,14 +8,14 @@ from BA__Programmierung.ml.datasets.dataset__torch__base_tabular import (
 )
 
 
-class WineQualityWhiteDataset(BaseTabularDataset):
+class WineQualityDataset(BaseTabularDataset):
     """
-    PyTorch Dataset for the White Wine Quality dataset loaded from a CSV file.
+    PyTorch Dataset for the Wine Quality dataset loaded from a CSV file.
 
     Parameters
     ----------
     csv_path : str
-        Path to the CSV file containing the white wine quality data.
+        Path to the CSV file containing the wine quality data.
         The CSV is expected to be semicolon-separated (';').
 
     Raises
@@ -26,9 +25,9 @@ class WineQualityWhiteDataset(BaseTabularDataset):
 
     Notes
     -----
-    - Assumes the last column is the target quality label.
-    - No normalization applied.
-    - Classification is False, so labels are treated as regression targets.
+    - The dataset assumes the last column is the target quality label.
+    - The target is treated as a classification label (integer classes).
+    - No normalization is applied since this is a classification task.
     """
 
     def __init__(self, csv_path):
@@ -44,14 +43,14 @@ class WineQualityWhiteDataset(BaseTabularDataset):
             dataframe=df,
             input_cols=input_cols,
             target_cols=target_col,
-            normalize=False,       # No scaling, classification=False means regression labels
-            classification=False
+            normalize=False,     # Classification, no scaling of features
+            classification=True  # Labels are classes
         )
 
 
-def load_wine_quality_white_dataset(csv_path):
+def load_wine_quality_dataset(csv_path):
     """
-    Helper function to load the WineQualityWhiteDataset.
+    Helper function to load the WineQualityDataset.
 
     Parameters
     ----------
@@ -60,15 +59,15 @@ def load_wine_quality_white_dataset(csv_path):
 
     Returns
     -------
-    WineQualityWhiteDataset
-        Instance of the WineQualityWhiteDataset.
+    WineQualityDataset
+        Instance of the WineQualityDataset.
     """
-    return WineQualityWhiteDataset(csv_path)
+    return WineQualityDataset(csv_path)
 
 
 if __name__ == "__main__":
-    dataset_path = "/root/BA__Projekt/assets/data/raw/dataset__wine-quality/winequality-white.csv"
-    dataset = load_wine_quality_white_dataset(dataset_path)
+    dataset_path = "/root/BA__Projekt/assets/data/raw/dataset__wine-quality/winequality-red.csv"
+    dataset = load_wine_quality_dataset(dataset_path)
 
     print(f"Loaded {len(dataset)} samples.")
     x, y = dataset[0]
