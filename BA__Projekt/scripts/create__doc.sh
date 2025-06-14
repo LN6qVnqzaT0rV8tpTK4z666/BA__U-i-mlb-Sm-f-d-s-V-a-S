@@ -8,7 +8,7 @@ sphinx-quickstart \
   --project "BA__U-i-mlb-Sm-f-d-s-V-a-S" \
   --author "Marten Windler" \
   --release "0.1.0" \
-  --language "de" \
+  --language "en" \
   --extensions "sphinx.ext.autodoc,sphinx.ext.napoleon,sphinx.ext.viewcode" \
   --sep \
   --makefile \

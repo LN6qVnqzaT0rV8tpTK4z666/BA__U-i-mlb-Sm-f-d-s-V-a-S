@@ -48,20 +48,28 @@ Functions:
     epistemic_variance   # Epistemic uncertainty from MC predictions
     aleatoric_variance   # Aleatoric uncertainty (model-internal)
 
+    total_uncertainty
+
+    uda
+    ncg
+    meta_metric__bnn_ednn
+
 Usage:
     Register metrics for a task using `Metrics.register(...)` and
     compute them via `metric(y_pred, y_true)` or via accumulation with `metric(...)` + `metric.compute()`.
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
 import properscoring as ps
 import torch
+import torchmetrics.functional as MF
 import torch.nn.functional as F
 
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from BA__Programmierung.util.singleton import Singleton
 from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 
 class Metric:
@@ -249,10 +257,9 @@ def top_k_accuracy(y_pred, y_true, k=3):
     correct = sum(y_true[i] in topk[i] for i in range(len(y_true)))
     return correct / len(y_true)
 
-
-def mse(y_pred, y_true):
+def mse(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
     """Mean Squared Error."""
-    return F.mse_loss(y_pred, y_true).item()
+    return MF.mean_squared_error(y_pred, y_true)
 
 
 def rmse(y_pred, y_true):
@@ -476,16 +483,178 @@ def mutual_information(pred_probs: np.ndarray, **kwargs) -> float:
     return float(entropy_mean - mean_entropy)
 
 
-# Varianz-Dekomposition, Epistemische Varianz
+# Varianz-Dekomposition, Epistemische Varianz numpy
 def epistemic_variance(mc_preds: np.ndarray, **kwargs) -> float:
     """Epistemic variance: Varianz über Modelle (MC-Samples)"""
     return float(np.mean(np.var(mc_preds, axis=0)))
+
+
+# Varianz-Dekomposition, Epistemische Varianz torchmetrics
+def epistemic_uncertainty(predictions: torch.Tensor) -> torch.Tensor:
+    """
+    Estimate epistemic uncertainty from a set of predictions (e.g., MC Dropout).
+    Expects shape: (num_samples, batch_size)
+    """
+    return predictions.std(dim=0)
 
 
 # Varianz-Dekomposition, Aleartorische Varianz
 def aleatoric_variance(pred_std: np.ndarray, **kwargs) -> float:
     """Aleatoric variance: Modellinterne Unsicherheit"""
     return float(np.mean(pred_std ** 2))
+
+
+# Varianz-Dekomposition, Aleatorische Varianz torchmetrics
+def aleatoric_uncertainty(variance_pred: torch.Tensor) -> torch.Tensor:
+    """
+    Aleatoric uncertainty: predicted variance per sample.
+    """
+    return torch.sqrt(variance_pred)
+
+
+# Totale Unsicherheit
+def total_uncertainty(epistemic: torch.Tensor, aleatoric: torch.Tensor) -> torch.Tensor:
+    """
+    Total uncertainty = sqrt(aleatoric^2 + epistemic^2)
+    """
+    return torch.sqrt(epistemic ** 2 + aleatoric ** 2)
+
+
+# Kalibrierungsfehler
+def calibration_error(y_true: torch.Tensor, y_pred: torch.Tensor, uncertainty: torch.Tensor, num_bins: int = 10) -> torch.Tensor:
+    """
+    Empirical calibration error: fraction of true values within predicted uncertainty intervals.
+    """
+    assert y_true.shape == y_pred.shape == uncertainty.shape, "Shapes must match."
+    z = torch.abs(y_pred - y_true) / (uncertainty + 1e-8)
+    inside = (z < 1.0).float()
+    return 1.0 - inside.mean()
+
+
+def interval_coverage(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    uncertainty: torch.Tensor,
+    alphas: List[float] = [0.05, 0.1, 0.2]
+) -> Tuple[List[float], List[float]]:
+    """
+    Computes actual coverage of predictive intervals for various alphas (1 - confidence).
+    
+    Parameters
+    ----------
+    y_true : torch.Tensor
+        Ground truth targets.
+    y_pred : torch.Tensor
+        Predicted means.
+    uncertainty : torch.Tensor
+        Predictive standard deviation (not variance!).
+    alphas : list of float
+        Alpha values corresponding to confidence levels (e.g., 0.05 for 95%).
+
+    Returns
+    -------
+    levels : list of float
+        Confidence levels (1 - alpha).
+    coverages : list of float
+        Actual fraction of targets falling within predicted interval.
+    """
+    from scipy.stats import norm
+
+    levels = [1 - a for a in alphas]
+    coverages = []
+
+    for alpha in alphas:
+        z = norm.ppf(1 - alpha / 2)
+        lower = y_pred - z * uncertainty
+        upper = y_pred + z * uncertainty
+        in_interval = ((y_true >= lower) & (y_true <= upper)).float()
+        coverage = in_interval.mean().item()
+        coverages.append(coverage)
+
+    return levels, coverages
+
+
+def uda(pred_uncert_epistemic, pred_uncert_aleatoric, true_errors):
+    """
+    Compute Uncertainty Decomposition Accuracy (UDA).
+
+    Args:
+        pred_uncert_epistemic (np.ndarray): Predicted epistemic uncertainty per sample.
+        pred_uncert_aleatoric (np.ndarray): Predicted aleatoric uncertainty per sample.
+        true_errors (np.ndarray): True errors or error components per sample.
+
+    Returns:
+        float: UDA score (e.g., correlation or accuracy)
+    """
+    # For example, you might correlate epistemic uncertainty with error magnitude
+    # This is a placeholder implementation — adjust according to your setup
+    
+    # Normalize uncertainties and errors
+    epistemic_norm = (pred_uncert_epistemic - np.min(pred_uncert_epistemic)) / (np.ptp(pred_uncert_epistemic) + 1e-8)
+    aleatoric_norm = (pred_uncert_aleatoric - np.min(pred_uncert_aleatoric)) / (np.ptp(pred_uncert_aleatoric) + 1e-8)
+    errors_norm = (true_errors - np.min(true_errors)) / (np.ptp(true_errors) + 1e-8)
+    
+    # Compute correlation between epistemic uncertainty and error as proxy for UDA
+    corr_epistemic = np.corrcoef(epistemic_norm, errors_norm)[0, 1]
+    
+    # Compute correlation between aleatoric uncertainty and error (or noise)
+    corr_aleatoric = np.corrcoef(aleatoric_norm, errors_norm)[0, 1]
+    
+    # Average or weighted average of correlations as UDA
+    uda_score = 0.5 * corr_epistemic + 0.5 * corr_aleatoric
+    
+    # Clamp score between 0 and 1 (optional)
+    uda_score = max(0.0, min(1.0, uda_score))
+    
+    return uda_score
+
+
+def ncg(confidence_scores, baseline_confidence_scores):
+    """
+    Compute Normalized Confidence Gain (NCG).
+
+    Args:
+        confidence_scores (np.ndarray): Confidence scores after calibration.
+        baseline_confidence_scores (np.ndarray): Baseline confidence scores.
+
+    Returns:
+        float: NCG value between 0 and 1.
+    """
+    # For instance, use mean confidence improvement normalized by max possible gain
+    gain = np.mean(confidence_scores) - np.mean(baseline_confidence_scores)
+    
+    # Normalize by max possible gain (e.g., 1 - baseline_mean_confidence)
+    max_gain = 1.0 - np.mean(baseline_confidence_scores)
+    
+    if max_gain == 0:
+        return 0.0
+    
+    ncg = gain / max_gain
+    ncg = max(0.0, min(1.0, ncg))  # clamp between 0 and 1
+    
+    return ncg
+
+
+
+def meta_metric__bnn_ednn(UDA, meta_calibration_score, corr_err_epistemic, NCG):
+    """
+    Computes the meta-metric as a weighted average of four submetrics.
+
+    Args:
+        UDA (float): Uncertainty Decomposition Accuracy
+        meta_calibration_score (float): Calibration score (e.g. ECE, ACE)
+        corr_err_epistemic (float): Correlation between error and epistemic uncertainty
+        NCG (float): Normalized Confidence Gain
+
+    Returns:
+        float: Meta-metric value
+    """
+    return (
+        0.25 * UDA +
+        0.25 * meta_calibration_score +
+        0.25 * corr_err_epistemic +
+        0.25 * (1 - NCG)
+    )
 
 
 # ───── Register Metrics ───── #
@@ -525,6 +694,24 @@ Metrics.register("uq", aleatoric_variance, accumulate=True)
 # Metrics.register("uq", cov_train, name="cov_train", accumulate=True)
 # Metrics.register("uq", cov_test, name="cov_test", accumulate=True)
 # Metrics.register("uq", cross_cov, name="cross_cov", accumulate=True)
+
+# Probabilistic Regression
+Metrics.register("probabilistic", nll_gaussian, accumulate=True)
+Metrics.register("probabilistic", energy_score, accumulate=True)
+Metrics.register("probabilistic", lambda mean, std, y: continuous_ranked_probability_score(mean.cpu().numpy(), std.cpu().numpy(), y.cpu().numpy()), name="crps", accumulate=True)
+Metrics.register("probabilistic", lambda mean, std, ref_m, ref_s: kl_divergence_normal(mean, std, ref_m, ref_s), name="kl_div", accumulate=True)
+
+Metrics.register("uq", mean_pred_variance, accumulate=True)
+Metrics.register("uq", predictive_entropy, accumulate=True)
+Metrics.register("uq", mutual_information, accumulate=True)
+Metrics.register("uq", epistemic_variance, accumulate=True)
+Metrics.register("uq", aleatoric_variance, accumulate=True)
+Metrics.register("uq", calibration_error, accumulate=True)
+
+Metrics.register("uq", uda, accumulate=True)
+Metrics.register("uq", ncg, accumulate=True)
+Metrics.register("uq", meta_metric__bnn_ednn, accumulate=True)
+
 
 # ───── Example Usage ───── #
 

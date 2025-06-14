@@ -23,6 +23,7 @@ dependencies = [
     "sphinx",
     "tensorflow",
     "torch",
+    "torchmetrics",
     "torchvision",
     "xlrd"
 ]

@@ -1,4 +1,5 @@
 # BA__Projekt/BA__Programmierung/ml/losses/evidential_loss.py
+
 import torch
 
 
@@ -9,13 +10,12 @@ def evidential_loss(
     alpha: torch.Tensor,
     beta: torch.Tensor,
     lambda_reg: float = 1.0,
-    kl_coef: float = 0.0,
+    kl_coef: float = 1e-2,
     use_logv: bool = False,
-    use_kl: bool = False,
-    reg_type: str = "abs",  # or 'none'
+    mode: str = "full",  # ['nll', 'abs', 'mse', 'kl', 'full', 'scaled', 'variational']
 ) -> torch.Tensor:
     """
-    Generalized Evidential Regression Loss with optional regularization and KL divergence.
+    Generalized Evidential Regression Loss supporting multiple variants.
 
     Parameters
     ----------
@@ -29,22 +29,21 @@ def evidential_loss(
         Evidence shape parameter.
     beta : torch.Tensor
         Evidence scale parameter.
-    lambda_reg : float, optional
-        Coefficient for regularization term (default: 1.0).
-    kl_coef : float, optional
-        Coefficient for KL divergence term (default: 0.0 — off).
-    use_logv : bool, optional
-        If True, apply log1p to v inside the regularizer (for log-space modeling).
-    use_kl : bool, optional
-        If True, adds KL divergence between predicted and standard Normal-Inverse-Gamma (NIG).
-    reg_type : str, optional
-        Type of regularization: `"abs"` (|y - μ| * penalty) or `"none"`.
+    lambda_reg : float
+        Coefficient for the regularization term.
+    kl_coef : float
+        Coefficient for the KL divergence term.
+    use_logv : bool
+        Use log1p(v) instead of v in regularization (for numerical stability).
+    mode : str
+        Loss variant: 'nll', 'abs', 'mse', 'kl', 'full', 'scaled', 'variational'.
 
     Returns
     -------
     torch.Tensor
-        Mean evidential loss over batch.
+        Scalar loss (mean over batch).
     """
+
     two_blambda = 2 * beta * (1 + v)
     nll = (
         0.5 * torch.log(torch.pi / v)
@@ -54,14 +53,22 @@ def evidential_loss(
         - torch.lgamma(alpha + 0.5)
     )
 
-    reg = 0.0
-    if reg_type == "abs":
+    if mode == "nll":
+        return nll.mean()
+
+    elif mode == "abs":
         error = torch.abs(y - mu)
         penalty = 2 * torch.log1p(v) if use_logv else 2 * v
         reg = error * (penalty + alpha)
+        return (nll + lambda_reg * reg).mean()
 
-    kl = 0.0
-    if use_kl:
+    elif mode == "mse":
+        error = (y - mu) ** 2
+        penalty = 2 * torch.log1p(v) if use_logv else 2 * v
+        reg = error * (penalty + alpha)
+        return (nll + lambda_reg * reg).mean()
+
+    elif mode == "kl":
         kl = (
             alpha * torch.log(beta)
             - (alpha - 0.5) * torch.digamma(alpha)
@@ -69,44 +76,50 @@ def evidential_loss(
             - 0.5 * torch.log(v)
             - alpha
         )
+        return (nll + kl_coef * kl).mean()
 
-    return (nll + lambda_reg * reg + kl_coef * kl).mean()
+    elif mode == "scaled":
+        reg = torch.abs(y - mu) / (alpha + 1e-6)
+        return (nll + lambda_reg * reg).mean()
+
+    elif mode == "variational":
+        precision = alpha / (beta + 1e-6)
+        error = (y - mu) ** 2
+        return 0.5 * (torch.log(1.0 / precision) + precision * error).mean()
+
+    elif mode == "full":
+        # NLL
+        error = torch.abs(y - mu)
+        penalty = 2 * torch.log1p(v) if use_logv else 2 * v
+        reg = error * (penalty + alpha)
+        # KL
+        kl = (
+            alpha * torch.log(beta)
+            - (alpha - 0.5) * torch.digamma(alpha)
+            + torch.lgamma(alpha)
+            - 0.5 * torch.log(v)
+            - alpha
+        )
+        return (nll + lambda_reg * reg + kl_coef * kl).mean()
+
+    else:
+        raise ValueError(f"Unknown loss mode: '{mode}'")
 
 
 if __name__ == "__main__":
     torch.manual_seed(42)
-    N = 8
+    N = 16
     y = torch.randn(N)
     mu = y + 0.1 * torch.randn(N)
-    v = torch.abs(torch.randn(N)) + 1e-6  # positive variance-like param
+    v = torch.abs(torch.randn(N)) + 1e-6
     alpha = torch.abs(torch.randn(N)) + 1.0
     beta = torch.abs(torch.randn(N)) + 1.0
 
     print("=== Evidential Loss Variants ===\n")
-
-    # 1) NLL only
-    loss1 = evidential_loss(y, mu, v, alpha, beta, lambda_reg=0.0, kl_coef=0.0, reg_type="none")
-    print(f"1) NLL only: {loss1.item():.6f}")
-
-    # 2) NLL + L1 regularization (linear space)
-    loss2 = evidential_loss(y, mu, v, alpha, beta, lambda_reg=1.0, kl_coef=0.0, reg_type="abs", use_logv=False)
-    print(f"2) NLL + L1 reg (linear v): {loss2.item():.6f}")
-
-    # 3) NLL + L1 regularization (log space)
-    loss3 = evidential_loss(y, mu, v, alpha, beta, lambda_reg=1.0, kl_coef=0.0, reg_type="abs", use_logv=True)
-    print(f"3) NLL + L1 reg (log1p v): {loss3.item():.6f}")
-
-    # 4) NLL + KL divergence (no reg)
-    loss4 = evidential_loss(y, mu, v, alpha, beta, lambda_reg=0.0, kl_coef=1e-2, use_kl=True, reg_type="none")
-    print(f"4) NLL + KL divergence: {loss4.item():.6f}")
-
-    # 5) NLL + L1 reg + KL divergence + log space reg
-    loss5 = evidential_loss(
-        y, mu, v, alpha, beta,
-        lambda_reg=1.0,
-        kl_coef=1e-2,
-        use_kl=True,
-        use_logv=True,
-        reg_type="abs"
-    )
-    print(f"5) NLL + L1 reg + KL + log1p v: {loss5.item():.6f}")
+    print(f"1) nll:         {evidential_loss(y, mu, v, alpha, beta, mode='nll'):.6f}")
+    print(f"2) abs:         {evidential_loss(y, mu, v, alpha, beta, mode='abs'):.6f}")
+    print(f"3) mse:         {evidential_loss(y, mu, v, alpha, beta, mode='mse'):.6f}")
+    print(f"4) kl:          {evidential_loss(y, mu, v, alpha, beta, mode='kl'):.6f}")
+    print(f"5) scaled:      {evidential_loss(y, mu, v, alpha, beta, mode='scaled'):.6f}")
+    print(f"6) variational: {evidential_loss(y, mu, v, alpha, beta, mode='variational'):.6f}")
+    print(f"7) full:        {evidential_loss(y, mu, v, alpha, beta, mode='full'):.6f}")

@@ -66,9 +66,4 @@ bash scripts/create__files_by_token.sh test__ednn_regression py tests/
 ```
 
 ## Changelog
-- [x] Setup basic make build, clean, init-all, init-local, init-docker.
-- [x] Start english documentation.
-- [x] Setup basic loss-visualization to `/viz/`.
-- [x] Setup basic iris EDNN-training to `/data/processed/`.
-- [x] Setup basic Docker.
-- [x] Setup Readme.
+- Please check project gantt-chart from introduction mail.
