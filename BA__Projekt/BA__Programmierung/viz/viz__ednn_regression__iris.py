@@ -1,158 +1,199 @@
-# BA__Projekt/BA__Programmierung/viz/vis__ednn_regression__iris.py
+# BA__Programmierung/viz/vis__ednn_regression__iris.py
 
-import glob
 import os
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import torch
-
-from BA__Programmierung.config import VIZ_PATH, DATA_DIR__PROCESSED
-from BA__Programmierung.ml.ednn_regression__iris import EvidentialNet
-from BA__Programmierung.ml.datasets.dataset__torch_duckdb_iris import DatasetTorchDuckDBIris
+from torch.utils.data import DataLoader
 from sklearn.decomposition import PCA
-from tensorboard.backend.event_processing import event_accumulator
+from sklearn.metrics import r2_score, mean_absolute_percentage_error
+from sklearn.preprocessing import StandardScaler
+
+from BA__Programmierung.config import VIZ_PATH
+from BA__Programmierung.ml.datasets.dataset__torch__duckdb_iris import DatasetTorchDuckDBIris
+from models.model__generic_ensemble import GenericEnsembleRegressor
 
 
-def plot_loss_curves():
-    # ============
-    # Visualization
-    # ============
+def evaluate_and_save_dashboard_ensemble(model, dataloader, device, save_dir, scaler_y=None):
+    """
+    Evaluates a generic ensemble EDNN regression model and saves diagnostic visualizations.
 
-    # === Dynamisches Logverzeichnis finden ===
-    processed_root = DATA_DIR__PROCESSED
-    log_folders = sorted(
-        glob.glob(os.path.join(processed_root, "ednn_iris_*")),
-        key=os.path.getmtime,
-        reverse=True,
-    )
+    The function computes:
+    - R² and MAPE scores
+    - Predicted mean and uncertainty (σ)
+    - Residual diagnostics
+    - Parameter distributions
+    - PCA plot colored by aleatoric uncertainty
 
-    if not log_folders:
-        raise FileNotFoundError(
-            "No log directory found. Please run training first."
-        )
+    It then saves the following plots to `save_dir`:
+    - true_vs_pred.png
+    - residual_hist.png
+    - residuals_vs_true.png
+    - uncertainty_vs_error.png
+    - dist_mu.png, dist_v.png, dist_alpha.png, dist_beta.png
+    - pca_aleatoric.png
 
-    log_dir = log_folders[0]
-    print(f"Verwende Log-Verzeichnis: {log_dir}")
+    Args:
+        model (GenericEnsembleRegressor): Trained ensemble regression model.
+        dataloader (DataLoader): Torch dataloader providing test data.
+        device (torch.device): Computation device (CPU or CUDA).
+        save_dir (str): Path to save all generated plots.
+        scaler_y (StandardScaler, optional): Target scaler for inverse transformation.
 
-    # === Zielverzeichnis für Visualisierung ===
-    SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
-    SCRIPT_VIZ_DIR = os.path.join(VIZ_PATH, SCRIPT_NAME)
-    os.makedirs(SCRIPT_VIZ_DIR, exist_ok=True)
-    output_path = os.path.join(SCRIPT_VIZ_DIR, "loss_curve.png")
-
-    # === TensorBoard-Logs einlesen ===
-    ea = event_accumulator.EventAccumulator(log_dir)
-    ea.Reload()
-
-    # Verfügbare Tags anzeigen (optional)
-    print("Verfügbare Scalar-Tags:", ea.Tags()["scalars"])
-
-    # Daten extrahieren
-    train_scalars = ea.Scalars("Loss/train")
-    val_scalars = (
-        ea.Scalars("Loss/val") if "Loss/val" in ea.Tags()["scalars"] else []
-    )
-
-    train_steps = [e.step for e in train_scalars]
-    train_vals = [e.value for e in train_scalars]
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(train_steps, train_vals, label="Train Loss", color="blue")
-
-    if val_scalars:
-        val_steps = [e.step for e in val_scalars]
-        val_vals = [e.value for e in val_scalars]
-        plt.plot(val_steps, val_vals, label="Val Loss", color="orange")
-
-    plt.title("Train & Validation Loss")
-    plt.xlabel("Epoch")
-    plt.ylabel("Loss")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-
-    # === Bild speichern ===
-    plt.savefig(output_path)
-    print(f"Plot gespeichert unter: {output_path}")
-
-
-def evidential_dashboard(model, dataset, device="cpu"):
+    Returns:
+        None
+    """
     model.eval()
-    X = dataset.X.to(device)
-    y = dataset.y.to(device)
+    mu_list, v_list, alpha_list, beta_list, targets_list = [], [], [], [], []
 
     with torch.no_grad():
-        mu, v, alpha, beta = model(X)
+        for x, y in dataloader:
+            x = x.to(device)
+            mu, v, alpha, beta = model(x)
 
-    mu = mu.squeeze().cpu().numpy()
-    y_true = y.squeeze().cpu().numpy()
-    v = v.squeeze().cpu().numpy()
-    alpha = alpha.squeeze().cpu().numpy()
-    beta = beta.squeeze().cpu().numpy()
+            # Average across ensemble members if applicable
+            if mu.dim() == 3:
+                mu = mu.mean(dim=0)
+                v = v.mean(dim=0)
+                alpha = alpha.mean(dim=0)
+                beta = beta.mean(dim=0)
 
+            mu_list.append(mu.cpu().numpy())
+            v_list.append(v.cpu().numpy())
+            alpha_list.append(alpha.cpu().numpy())
+            beta_list.append(beta.cpu().numpy())
+            targets_list.append(y.numpy())
+
+    mu = np.vstack(mu_list)
+    v = np.vstack(v_list)
+    alpha = np.vstack(alpha_list)
+    beta = np.vstack(beta_list)
+    targets = np.vstack(targets_list)
+
+    if scaler_y is not None:
+        mu = scaler_y.inverse_transform(mu)
+        targets = scaler_y.inverse_transform(targets)
+        sigma_squared = beta / (v * (alpha - 1 + 1e-6))
+        sigma = np.sqrt(sigma_squared) * scaler_y.scale_[0]
+    else:
+        sigma = np.sqrt(beta / (v * (alpha - 1 + 1e-6)))
+
+    residuals = mu.flatten() - targets.flatten()
+    abs_error = np.abs(residuals)
+    r2 = r2_score(targets, mu)
+    mape = mean_absolute_percentage_error(targets, mu)
+
+    print(f"R² score: {r2:.4f}")
+    print(f"MAPE: {mape * 100:.2f}%")
+
+    os.makedirs(save_dir, exist_ok=True)
+
+    # 1. True vs Predicted
+    plt.figure(figsize=(8, 6))
+    plt.errorbar(targets.flatten(), mu.flatten(), yerr=sigma.flatten(), fmt="o", alpha=0.3)
+    sns.scatterplot(x=targets.flatten(), y=mu.flatten(), alpha=0.6)
+    plt.plot([targets.min(), targets.max()], [targets.min(), targets.max()], 'r--')
+    plt.title("Predicted μ vs True y ± Uncertainty")
+    plt.xlabel("True y")
+    plt.ylabel("Predicted μ")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, "true_vs_pred.png"))
+    plt.close()
+
+    # 2. Residual Histogram
+    plt.figure(figsize=(7, 5))
+    sns.histplot(residuals, bins=30, kde=True)
+    plt.title("Residual Distribution")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, "residual_hist.png"))
+    plt.close()
+
+    # 3. Residuals vs True
+    plt.figure(figsize=(7, 5))
+    sns.scatterplot(x=targets.flatten(), y=residuals, alpha=0.5)
+    plt.axhline(0, linestyle="--", color="red")
+    plt.title("Residuals vs True y")
+    plt.xlabel("True y")
+    plt.ylabel("Residual")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, "residuals_vs_true.png"))
+    plt.close()
+
+    # 4. Uncertainty vs Absolute Error
+    plt.figure(figsize=(7, 5))
+    sns.scatterplot(x=sigma.flatten(), y=abs_error, alpha=0.5)
+    plt.title("Uncertainty vs Absolute Error")
+    plt.xlabel("Predicted Std Dev")
+    plt.ylabel("Absolute Error")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, "uncertainty_vs_error.png"))
+    plt.close()
+
+    # 5-8. Parameter Distributions
+    for name, arr in [("mu", mu), ("v", v), ("alpha", alpha), ("beta", beta)]:
+        plt.figure(figsize=(7, 5))
+        sns.histplot(arr.flatten(), bins=30, kde=True)
+        plt.title(f"Distribution of {name}")
+        plt.grid(True)
+        plt.tight_layout()
+        plt.savefig(os.path.join(save_dir, f"dist_{name}.png"))
+        plt.close()
+
+    # 9. PCA Plot with aleatoric uncertainty
     aleatoric = beta / (alpha - 1 + 1e-6)
-    epistemic = beta / ((v + 1e-6) * (alpha - 1 + 1e-6))  # Optional
+    dataset_X = np.vstack([x.numpy() for x, _ in dataloader])
+    pca_proj = PCA(n_components=2).fit_transform(dataset_X)
 
-    fig, axs = plt.subplots(3, 2, figsize=(14, 14))
-    fig.suptitle("📊 Evidential Regression Dashboard", fontsize=16)
-
-    axs[0, 0].scatter(mu, y_true, alpha=0.7, label="Prediction")
-    axs[0, 0].errorbar(
-        mu, y_true, yerr=aleatoric, fmt="o", alpha=0.2, label="Uncertainty"
-    )
-    axs[0, 0].plot(
-        [min(y_true), max(y_true)], [min(y_true), max(y_true)], "r--"
-    )
-    axs[0, 0].set_xlabel("Predicted μ")
-    axs[0, 0].set_ylabel("True y")
-    axs[0, 0].set_title("μ vs True y ± Uncertainty")
-    axs[0, 0].legend()
-    axs[0, 0].grid()
-
-    axs[0, 1].hist(mu, bins=30, color="cornflowerblue")
-    axs[0, 1].set_title("Distribution of μ")
-    axs[0, 1].grid()
-
-    axs[1, 0].hist(v, bins=30, color="orange")
-    axs[1, 0].set_title("Distribution of v (inverse variance)")
-    axs[1, 0].grid()
-
-    axs[1, 1].hist(alpha, bins=30, color="mediumseagreen")
-    axs[1, 1].set_title("Distribution of α")
-    axs[1, 1].grid()
-
-    axs[2, 0].hist(beta, bins=30, color="slateblue")
-    axs[2, 0].set_title("Distribution of β")
-    axs[2, 0].grid()
-
-    X_pca = PCA(n_components=2).fit_transform(X.cpu())
-    sc = axs[2, 1].scatter(
-        X_pca[:, 0], X_pca[:, 1], c=aleatoric, cmap="viridis", alpha=0.8
-    )
-    axs[2, 1].set_title("PCA Projection with Aleatoric Uncertainty")
-    axs[2, 1].set_xlabel("PCA 1")
-    axs[2, 1].set_ylabel("PCA 2")
-    fig.colorbar(sc, ax=axs[2, 1], label="Uncertainty")
-
-    plt.tight_layout(rect=[0, 0.03, 1, 0.97])
-
-    SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
-    SCRIPT_VIZ_DIR = os.path.join(VIZ_PATH, SCRIPT_NAME)
-    os.makedirs(SCRIPT_VIZ_DIR, exist_ok=True)
-    output_path = os.path.join(SCRIPT_VIZ_DIR, "evidential_dashboard.png")
-    plt.savefig(output_path)
-    print(f"Dashboard gespeichert unter: {output_path}")
+    plt.figure(figsize=(8, 6))
+    sc = plt.scatter(pca_proj[:, 0], pca_proj[:, 1], c=aleatoric.flatten(), cmap="viridis", alpha=0.8)
+    plt.colorbar(sc, label="Aleatoric Uncertainty")
+    plt.title("PCA of Input Colored by Aleatoric Uncertainty")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(os.path.join(save_dir, "pca_aleatoric.png"))
+    plt.close()
 
 
 def main():
     dataset = DatasetTorchDuckDBIris(
-        db_path="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/dbs/dataset__iris__dataset.duckdb",
-        table_name="iris__dataset_csv"  # ggf. anpassen
+        db_path="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/dbs/dataset__iris-dataset.duckdb",
+        table_name="iris_dataset_csv"
     )
-    device = "cpu"
-    model = EvidentialNet(input_dim=4)
-    plot_loss_curves()
-    evidential_dashboard(model, dataset)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    X = dataset.X.numpy()
+    y = dataset.y.numpy().reshape(-1, 1)
+
+    scaler_x = StandardScaler().fit(X)
+    scaler_y = StandardScaler().fit(y)
+
+    X_scaled = torch.tensor(scaler_x.transform(X), dtype=torch.float32)
+    y_scaled = torch.tensor(scaler_y.transform(y), dtype=torch.float32)
+
+    full_dataset = torch.utils.data.TensorDataset(X_scaled, y_scaled)
+    dataloader = DataLoader(full_dataset, batch_size=64, shuffle=False)
+
+    base_config = {
+        "input_dim": 4,  # Iris features count
+        "hidden_dims": [64, 64],
+        "output_type": "evidential",
+        "use_dropout": False,
+        "dropout_p": 0.2,
+        "flatten_input": False,
+        "use_batchnorm": False,
+        "activation_name": "relu",
+    }
+
+    model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
+    # model.load_state_dict(torch.load("path_to_trained_model.pth"))  # Optional
+
+    save_dir = os.path.join(VIZ_PATH, "viz__ednn_regression__iris")
+    evaluate_and_save_dashboard_ensemble(model, dataloader, device=device, save_dir=save_dir, scaler_y=scaler_y)
 
 
 if __name__ == "__main__":

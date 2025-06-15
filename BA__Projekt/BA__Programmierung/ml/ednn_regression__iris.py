@@ -1,98 +1,43 @@
 # BA__Projekt/BA__Programmierung/ml/ednn_regression__iris.py
+"""
+Train an evidential deep ensemble regressor on the Iris dataset.
 
-import os
-from datetime import datetime
+This script performs the following steps:
+
+- Loads the Iris dataset from DuckDB.
+- Splits into training and validation sets (80/20).
+- Creates DataLoaders.
+- Configures and initializes a GenericEnsembleRegressor model.
+- Trains with early stopping and saves the best checkpoint.
+
+Usage:
+    Run this script directly to start training.
+"""
 
 import torch
 from torch.utils.data import DataLoader, random_split
-from torch.utils.tensorboard import SummaryWriter
 
 from BA__Programmierung.ml.datasets.dataset__torch__duckdb_iris import DatasetTorchDuckDBIris
-from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from models.model__generic_ensemble import GenericEnsembleRegressor
-
-
-def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device="cpu"):
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-
-    # === TensorBoard Writer ===
-    log_dir = os.path.join(
-        "/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/data/processed",
-        "ednn_iris_ensemble_" + datetime.now().strftime("%Y%m%d-%H%M%S"),
-    )
-    writer = SummaryWriter(log_dir=log_dir)
-
-    model.to(device)
-
-    best_val_loss = float("inf")
-    epochs_no_improve = 0
-    patience = 5
-    model_save_path = "/root/BA__Projekt/assets/models/pth/ednn_regression__iris_ensemble/ednn_regression__iris_ensemble.pth"
-    os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
-
-    for epoch in range(epochs):
-        model.train()
-        total_loss = 0.0
-
-        for X, y in train_loader:
-            X, y = X.to(device), y.to(device)
-            optimizer.zero_grad()
-            mu, v, alpha, beta = model(X)
-            loss = evidential_loss(y, mu, v, alpha, beta)
-            loss.backward()
-            optimizer.step()
-            total_loss += loss.item()
-
-        avg_loss = total_loss / len(train_loader)
-        writer.add_scalar("Loss/train", avg_loss, epoch)
-
-        # === Validation ===
-        model.eval()
-        val_loss = 0.0
-        with torch.no_grad():
-            for X_val, y_val in val_loader:
-                X_val, y_val = X_val.to(device), y_val.to(device)
-                mu, v, alpha, beta = model(X_val)
-                loss = evidential_loss(y_val, mu, v, alpha, beta)
-                val_loss += loss.item()
-        avg_val_loss = val_loss / len(val_loader)
-        writer.add_scalar("Loss/val", avg_val_loss, epoch)
-
-        print(f"Epoch {epoch + 1}/{epochs} - Train Loss: {avg_loss:.4f} - Val Loss: {avg_val_loss:.4f}")
-
-        # === Early Stopping ===
-        if avg_val_loss < best_val_loss:
-            best_val_loss = avg_val_loss
-            epochs_no_improve = 0
-            torch.save(model.state_dict(), model_save_path)
-            print(f"Validation improved. Model saved to {model_save_path}")
-        else:
-            epochs_no_improve += 1
-            print(f"No improvement for {epochs_no_improve} epoch(s).")
-            if epochs_no_improve >= patience:
-                print("Early stopping triggered!")
-                break
-
-    writer.close()
+from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
 
 
 def main():
-    dataset = DatasetTorchDuckDBIris(
-        db_path="/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/dbs/dataset__iris__dataset.duckdb",
-        table_name="iris__dataset_csv",
-    )
+    db_path = "assets/dbs/dataset__iris-dataset.duckdb"
+    table_name = "iris_dataset_csv"
+    dataset = DatasetTorchDuckDBIris(db_path=db_path, table_name=table_name)
 
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
-    train_set, val_set = random_split(dataset, [train_size, val_size])
+    train_set, val_set = random_split(dataset, [train_size, val_size], generator=torch.Generator().manual_seed(42))
 
     train_loader = DataLoader(train_set, batch_size=16, shuffle=True)
-    val_loader = DataLoader(val_set, batch_size=16)
+    val_loader = DataLoader(val_set, batch_size=16, shuffle=False)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     base_config = {
-        "input_dim": 4,
+        "input_dim": 4,  # Iris features count
         "hidden_dims": [64, 64],
         "output_type": "evidential",
         "use_dropout": False,
@@ -101,9 +46,22 @@ def main():
         "use_batchnorm": False,
         "activation_name": "relu",
     }
-    model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
 
-    train(model, train_loader, val_loader, epochs=100, device=device)
+    model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+    model_path = "assets/models/pth/ednn_regression__iris_ensemble/generic_ensemble__iris.pt"
+
+    train_with_early_stopping(
+        model=model,
+        train_loader=train_loader,
+        val_loader=val_loader,
+        optimizer=optimizer,
+        model_path=model_path,
+        device=device,
+        epochs=100,
+        patience=5,
+    )
 
 
 if __name__ == "__main__":

@@ -23,7 +23,22 @@ build-main:
 	ba-programmierung
 	sleep 1
 	$(MAKE) build-test
-	
+
+build-develop:
+	@bash -c "printf '\n%.0s' {1..100}"
+	$(MAKE) clean
+	@echo "==> Ruff **/**/*.py check..."
+	$(MAKE) ruff
+	@echo "==> Activate python virtual environment..."
+	@bash -c "source .venv/bin/activate && \
+		echo '==> Restarting services...' && \
+		sh scripts/service__restart_all.sh && \
+		echo '==> Start building BA__Programmierung.main:main...' && \
+		pip install . --quiet \
+	"
+	ba-programmierung
+	sleep 1
+	$(MAKE) build-test
 
 build-test:
 	@echo "==> Create and execute test-environment..."

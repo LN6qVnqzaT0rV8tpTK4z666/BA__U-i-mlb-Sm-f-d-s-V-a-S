@@ -1,6 +1,7 @@
 # BA__Projekt/BA__Programmierung/ml/datasets/dataset__torch_nmavani_func1.py
 
 import duckdb
+import pandas as pd
 
 from BA__Programmierung.ml.datasets.dataset__torch__base_tabular import (
     BaseTabularDataset,
@@ -41,8 +42,16 @@ class DatasetTorchDuckDBFunc1(BaseTabularDataset):
     BaseTabularDataset.
     """
 
+
+
     def __init__(self, db_path, table_name="generated__nmavani__func_1_csv", normalize=True):
         con = duckdb.connect(db_path)
+        # init manually.
+        #df = pd.read_csv("assets/data/raw/dataset__generated-nmavani-func_1/dataset__generated-nmavani-func_1.csv")
+        #con = duckdb.connect("assets/dbs/dataset__generated__nmavani__func_1.duckdb")
+        #con.execute("CREATE TABLE generated_nmavani_func_1_csv AS SELECT * FROM df")
+        #time.sleep(1)
+        df = pd.read_csv("assets/data/raw/dataset__generated-nmavani-func_1/dataset__generated-nmavani-func_1.csv")
         df = con.execute(f"SELECT * FROM {table_name}").fetchdf()
         con.close()
 

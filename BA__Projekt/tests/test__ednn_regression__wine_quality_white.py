@@ -1,3 +1,5 @@
+# BA__Projekt/tests/test__ednn_regression__wine_quality_white.py
+
 import numpy as np
 import pytest
 import torch
@@ -8,7 +10,7 @@ from torch.utils.data import DataLoader
 from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import (
     WineQualityWhiteDataset,
 )
-from models.model__ednn_basic import EvidentialNet
+from models.model__generic_ensemble import GenericEnsembleRegressor
 
 
 @pytest.fixture(scope="module")
@@ -32,8 +34,20 @@ def data_and_model():
     input_dim = X_scaled.shape[1]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = EvidentialNet(input_dim).to(device)
-    model.load_state_dict(torch.load("models/ednn__wine-quality-white.pt", map_location=device))
+    base_config = {
+        "input_dim": input_dim,
+        "hidden_dims": [64, 64],
+        "output_type": "evidential",
+        "use_dropout": False,
+        "dropout_p": 0.2,
+        "flatten_input": False,
+        "use_batchnorm": False,
+        "activation_name": "relu",
+    }
+
+    model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
+    model_path = "assets/pth/ednn_regression__wine_quality_white/ednn__wine-quality-white.pt"
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
 
     return model, loader, scaler_y, device
@@ -50,7 +64,7 @@ def test_model_output_shapes(data_and_model):
         assert v.shape == (x.shape[0], 1)
         assert alpha.shape == (x.shape[0], 1)
         assert beta.shape == (x.shape[0], 1)
-        break  # Test one batch is sufficient
+        break  # One batch is sufficient
 
 
 def test_model_r2_and_mape(data_and_model):
@@ -83,4 +97,4 @@ def test_model_r2_and_mape(data_and_model):
 
 def test_model_class_type(data_and_model):
     model, _, _, _ = data_and_model
-    assert isinstance(model, EvidentialNet), "Model should be of type EvidentialNet"
+    assert isinstance(model, GenericEnsembleRegressor), "Model should be of type GenericEnsembleRegressor"

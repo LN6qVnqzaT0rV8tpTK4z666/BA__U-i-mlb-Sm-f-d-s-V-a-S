@@ -23,10 +23,10 @@ SKIP_TOKENS = {
     "condition_based_maintenance_of_naval_propulsion_plants",
     "energy_efficiency",
     "fmnist",
-    "iris",
-    "kin8nm",
-    "nmavani_func1",
-    "wine_quality_red",
+    # "iris",
+    # "kin8nm",
+    # "nmavani_func1",
+    # "wine_quality_red",
     # "wine_quality_white"
 }
 

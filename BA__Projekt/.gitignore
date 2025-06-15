@@ -16,7 +16,6 @@ assets/viz/
 **/**/data/processed/
 **/**/data/source/
 **/**/*.egg-info
-#**/**/gen/*
 **/**/logs/
 **/**/ml/*ednn_classification__*.py
 **/**/ml/*ednn_regression__*.py
@@ -26,11 +25,19 @@ assets/viz/
 **/**/venv/
 **/**/*Zone.Identifier
 # temp:
-## 
 !BA__Programmierung/ml/datasets/dataset__torch__base_tabular.py
-!BA__Programmierung/ml/datasets/dataset__torch__wine_quality_white.py
 !BA__Programmierung/ml/ednn_regression__wine_quality_white.py
 !BA__Programmierung/viz/viz__ednn_regression__wine_quality_white.py
 !tests/test__ednn_regression__wine-quality-white.py
-##  
-#!BA__Programmierung/gen/generator__nmavani--func-1.py
+!BA__Programmierung/ml/ednn_regression__wine_quality_red.py
+!BA__Programmierung/viz/viz__ednn_regression__wine_quality_red.py
+!tests/test__ednn_regression__wine-quality-red.py
+!BA__Programmierung/ml/ednn_regression__nmavani_func1.py
+!viz__ednn_regression__nmavani_func1.py
+!tests/test__ednn_regression__nmavani_func1.py
+!BA__Programmierung/ml/ednn_regression__kin8nm.py
+!viz__ednn_regression__kin8nm.py
+!tests/test__ednn_regression__kin8nm.py
+!BA__Programmierung/ml/ednn_regression__iris.py
+!viz__ednn_regression__iris.py
+!tests/test__ednn_regression__iris.py
