@@ -11,6 +11,8 @@ build-main:
 	$(MAKE) clean
 	@echo "==> Ruff **/**/*.py check..."
 	$(MAKE) ruff
+	@echo "==> Update doc to prev. state..."
+	$(MAKE) build-doc
 	@echo "==> Activate python virtual environment..."
 	@bash -c "source .venv/bin/activate && \
 		echo '==> Restarting services...' && \
@@ -22,6 +24,7 @@ build-main:
 	sleep 1
 	$(MAKE) build-test
 	
+
 build-test:
 	@echo "==> Create and execute test-environment..."
 	@bash -c "source .venv/bin/activate && \

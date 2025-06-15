@@ -16,11 +16,10 @@ assets/viz/
 **/**/data/processed/
 **/**/data/source/
 **/**/*.egg-info
-**/**/gen/*
+#**/**/gen/*
 **/**/logs/
 **/**/ml/*ednn_classification__*.py
 **/**/ml/*ednn_regression__*.py
-**/**/models/*
 **/**/*png
 **/**/__pycache__/
 **/**/viz/*
@@ -34,4 +33,4 @@ assets/viz/
 !BA__Programmierung/viz/viz__ednn_regression__wine_quality_white.py
 !tests/test__ednn_regression__wine-quality-white.py
 ##  
-!BA__Programmierung/gen/generator__nmavani--func-1.py
+#!BA__Programmierung/gen/generator__nmavani--func-1.py

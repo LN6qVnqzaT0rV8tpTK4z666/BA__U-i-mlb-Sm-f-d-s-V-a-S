@@ -3,17 +3,13 @@
 import os
 from datetime import datetime
 
-import matplotlib.pyplot as plt
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
 
-from BA__Programmierung.ml.datasets.dataset__torch__duckdb_iris import (
-    DatasetTorchDuckDBIris,
-)
+from BA__Programmierung.ml.datasets.dataset__torch__duckdb_iris import DatasetTorchDuckDBIris
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
-from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
+from models.model__generic_ensemble import GenericEnsembleRegressor
 
 
 def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device="cpu"):
@@ -22,7 +18,7 @@ def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device="cpu"):
     # === TensorBoard Writer ===
     log_dir = os.path.join(
         "/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/data/processed",
-        "ednn_iris_" + datetime.now().strftime("%Y%m%d-%H%M%S"),
+        "ednn_iris_ensemble_" + datetime.now().strftime("%Y%m%d-%H%M%S"),
     )
     writer = SummaryWriter(log_dir=log_dir)
 
@@ -31,7 +27,7 @@ def train(model, train_loader, val_loader, epochs=100, lr=1e-3, device="cpu"):
     best_val_loss = float("inf")
     epochs_no_improve = 0
     patience = 5
-    model_save_path = "/root/BA__Projekt/assets/models/pth/ednn_regression__iris/ednn_regression__iris.pth"
+    model_save_path = "/root/BA__Projekt/assets/models/pth/ednn_regression__iris_ensemble/ednn_regression__iris_ensemble.pth"
     os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
 
     for epoch in range(epochs):
@@ -94,7 +90,19 @@ def main():
     val_loader = DataLoader(val_set, batch_size=16)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = EvidentialNet(input_dim=4)
+
+    base_config = {
+        "input_dim": 4,
+        "hidden_dims": [64, 64],
+        "output_type": "evidential",
+        "use_dropout": False,
+        "dropout_p": 0.2,
+        "flatten_input": False,
+        "use_batchnorm": False,
+        "activation_name": "relu",
+    }
+    model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
+
     train(model, train_loader, val_loader, epochs=100, device=device)
 
 

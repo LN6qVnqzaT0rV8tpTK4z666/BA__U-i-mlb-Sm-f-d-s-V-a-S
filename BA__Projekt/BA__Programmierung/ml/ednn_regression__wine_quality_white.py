@@ -1,20 +1,13 @@
-# BA__Projekt/BA__Programmierung/ml/ednn_regression__wine-quality-white.py
+# BA__Projekt/BA__Programmierung/ml/ednn_regression__wine-quality-white_ensemble.py
 
 import os
 
 import torch
-
-# from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
-# from models.model__ednn_deep_dropout import EvidentialNetDeep as EvidentialNet
 from torch.utils.data import DataLoader, random_split
 
-from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import (
-    load_wine_quality_white_dataset,
-)
-from BA__Programmierung.ml.losses.evidential_loss__nll_reg import (
-    evidential_regression_loss,
-)
-from models.model__ednn_basic import EvidentialNet
+from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import load_wine_quality_white_dataset
+from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
+from models.model__generic_ensemble import GenericEnsembleRegressor
 
 
 def train_model(model, dataloader, optimizer, device):
@@ -25,7 +18,7 @@ def train_model(model, dataloader, optimizer, device):
 
         optimizer.zero_grad()
         mu, v, alpha, beta = model(inputs)
-        loss = evidential_regression_loss(targets, mu, v, alpha, beta)
+        loss = evidential_loss(targets, mu, v, alpha, beta, mode='nll')
         loss.backward()
         optimizer.step()
 
@@ -40,7 +33,7 @@ def evaluate_model(model, dataloader, device):
         for inputs, targets in dataloader:
             inputs, targets = inputs.to(device), targets.float().unsqueeze(1).to(device)
             mu, v, alpha, beta = model(inputs)
-            loss = evidential_regression_loss(targets, mu, v, alpha, beta)
+            loss = evidential_loss(targets, mu, v, alpha, beta, mode='nll')
             total_loss += loss.item()
     return total_loss / len(dataloader)
 
@@ -51,14 +44,27 @@ def main():
 
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
-    train_set, val_set = random_split(dataset, [train_size, val_size], generator=torch.Generator().manual_seed(42))
+    train_set, val_set = random_split(
+        dataset, [train_size, val_size], generator=torch.Generator().manual_seed(42)
+    )
 
     train_loader = DataLoader(train_set, batch_size=32, shuffle=True)
     val_loader = DataLoader(val_set, batch_size=32, shuffle=False)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = EvidentialNet(input_dim=dataset[0][0].shape[0]).to(device)
+    base_config = {
+        "input_dim": dataset[0][0].shape[0],
+        "hidden_dims": [64, 64],
+        "output_type": "evidential",
+        "use_dropout": False,
+        "dropout_p": 0.2,
+        "flatten_input": False,
+        "use_batchnorm": False,
+        "activation_name": "relu",
+    }
+
+    model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
     epochs = 50
@@ -66,14 +72,16 @@ def main():
     best_val_loss = float("inf")
     epochs_no_improve = 0
 
-    model_dir = "assets/models/pth/ednn_regression__wine_quality_white/"
+    model_dir = "assets/models/pth/ednn_regression__wine_quality_white_ensemble/"
     os.makedirs(model_dir, exist_ok=True)
-    model_path = os.path.join(model_dir, "ednn__wine-quality-white.pt")
+    model_path = os.path.join(model_dir, "generic_ensemble__wine-quality-white.pt")
 
     for epoch in range(epochs):
         train_loss = train_model(model, train_loader, optimizer, device)
         val_loss = evaluate_model(model, val_loader, device)
-        print(f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
+        print(
+            f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}"
+        )
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss

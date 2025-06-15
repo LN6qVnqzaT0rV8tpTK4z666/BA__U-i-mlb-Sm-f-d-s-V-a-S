@@ -1,9 +1,10 @@
 # BA__Projekt/BA__Programmierung/generator__nmavani__func_1.py
 
-import numpy as np
-import pandas as pd
 import os
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
 
 
 def generate_dataset(n_samples=100, x_min=-10, x_max=10, seed=42):

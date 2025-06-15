@@ -59,17 +59,18 @@ Usage:
     compute them via `metric(y_pred, y_true)` or via accumulation with `metric(...)` + `metric.compute()`.
 """
 
-import matplotlib.pyplot as plt
+from collections import defaultdict
+from collections.abc import Callable
+
 import numpy as np
 import properscoring as ps
 import torch
-import torchmetrics.functional as MF
-import torch.nn.functional as F
+import torch.nn.functional as tnf
+import torchmetrics.functional as tmf
+from scipy.stats import norm
 
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 from BA__Programmierung.util.singleton import Singleton
-from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Tuple, Union
 
 
 class Metric:
@@ -82,7 +83,7 @@ class Metric:
         accumulate (bool): Whether to accumulate results across multiple batches.
     """
 
-    def __init__(self, fn: Callable, name: Optional[str] = None, accumulate: bool = False):
+    def __init__(self, fn: Callable, name: str | None = None, accumulate: bool = False):
         self.fn = fn
         self.name = name or fn.__name__
         self.accumulate = accumulate
@@ -146,10 +147,10 @@ class MetricsRegistry(Singleton):
 
     def __init__(self):
         if not hasattr(self, "_initialized"):
-            self._registry: Dict[str, Dict[str, Metric]] = defaultdict(dict)
+            self._registry: dict[str, dict[str, Metric]] = defaultdict(dict)
             self._initialized = True
 
-    def register(self, task: str, fn: Callable, name: Optional[str] = None, accumulate=False):
+    def register(self, task: str, fn: Callable, name: str | None = None, accumulate=False):
         """
         Registers a new metric under a task.
 
@@ -162,7 +163,7 @@ class MetricsRegistry(Singleton):
         metric = Metric(fn, name, accumulate)
         self._registry[task][metric.name] = metric
 
-    def get(self, task: str, names: Union[str, List[str]]) -> Dict[str, Metric]:
+    def get(self, task: str, names: str | list[str]) -> dict[str, Metric]:
         """
         Retrieves metric(s) by name for a specific task.
 
@@ -177,7 +178,7 @@ class MetricsRegistry(Singleton):
             names = [names]
         return {name: self._registry[task][name] for name in names}
 
-    def list(self, task: Optional[str] = None) -> Dict[str, List[str]]:
+    def list(self, task: str | None = None) -> dict[str, list[str]]:
         """
         Lists all registered metrics.
 
@@ -191,7 +192,7 @@ class MetricsRegistry(Singleton):
             return {task: list(self._registry[task].keys())}
         return {task: list(metrics.keys()) for task, metrics in self._registry.items()}
 
-    def all(self, task: str) -> Dict[str, Metric]:
+    def all(self, task: str) -> dict[str, Metric]:
         """
         Returns all metrics for a task.
 
@@ -203,7 +204,7 @@ class MetricsRegistry(Singleton):
         """
         return self._registry[task]
 
-    def report(self, task: str, verbose=True) -> Dict[str, float]:
+    def report(self, task: str, verbose=True) -> dict[str, float]:
         """
         Computes and prints all accumulated metrics for a task.
 
@@ -259,17 +260,17 @@ def top_k_accuracy(y_pred, y_true, k=3):
 
 def mse(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
     """Mean Squared Error."""
-    return MF.mean_squared_error(y_pred, y_true)
+    return tmf.mean_squared_error(y_pred, y_true)
 
 
 def rmse(y_pred, y_true):
     """Root Mean Squared Error."""
-    return torch.sqrt(F.mse_loss(y_pred, y_true)).item()
+    return torch.sqrt(tnf.mse_loss(y_pred, y_true)).item()
 
 
 def mae(y_pred, y_true):
     """Mean Absolute Error."""
-    return F.l1_loss(y_pred, y_true).item()
+    return tnf.l1_loss(y_pred, y_true).item()
 
 
 def mape(y_pred, y_true, eps=1e-8):
@@ -402,7 +403,7 @@ def brier_score(y_pred, y_true):
     """
     Brier Score für probabilistische Klassifikation.
     """
-    y_true_oh = F.one_hot(y_true, num_classes=y_pred.shape[1]).float()
+    y_true_oh = tnf.one_hot(y_true, num_classes=y_pred.shape[1]).float()
     return torch.mean((y_pred - y_true_oh) ** 2).item()
 
 
@@ -535,8 +536,8 @@ def interval_coverage(
     y_true: torch.Tensor,
     y_pred: torch.Tensor,
     uncertainty: torch.Tensor,
-    alphas: List[float] = [0.05, 0.1, 0.2]
-) -> Tuple[List[float], List[float]]:
+    alphas: list[float] = [0.05, 0.1, 0.2]
+) -> tuple[list[float], list[float]]:
     """
     Computes actual coverage of predictive intervals for various alphas (1 - confidence).
     
@@ -558,7 +559,6 @@ def interval_coverage(
     coverages : list of float
         Actual fraction of targets falling within predicted interval.
     """
-    from scipy.stats import norm
 
     levels = [1 - a for a in alphas]
     coverages = []
@@ -636,7 +636,7 @@ def ncg(confidence_scores, baseline_confidence_scores):
 
 
 
-def meta_metric__bnn_ednn(UDA, meta_calibration_score, corr_err_epistemic, NCG):
+def meta_metric__bnn_ednn(uda, meta_calibration_score, corr_err_epistemic, ncg):
     """
     Computes the meta-metric as a weighted average of four submetrics.
 
@@ -650,10 +650,10 @@ def meta_metric__bnn_ednn(UDA, meta_calibration_score, corr_err_epistemic, NCG):
         float: Meta-metric value
     """
     return (
-        0.25 * UDA +
+        0.25 * uda +
         0.25 * meta_calibration_score +
         0.25 * corr_err_epistemic +
-        0.25 * (1 - NCG)
+        0.25 * (1 - ncg)
     )
 
 

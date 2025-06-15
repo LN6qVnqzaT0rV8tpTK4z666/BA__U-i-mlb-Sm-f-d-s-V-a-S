@@ -1,6 +1,6 @@
 # BA__Projekt/BA__Programmierung/viz/test__ednn_regression__wine-quality-white.py
-import os
 
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -13,17 +13,25 @@ from BA__Programmierung.config import VIZ_PATH
 from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import (
     WineQualityWhiteDataset,
 )
-from models.model__ednn_basic import EvidentialNet
+from models.model__generic_ensemble import GenericEnsembleRegressor  # Your ensemble model
 
 
-def evaluate_and_save_dashboard(model, dataloader, scaler_y, device, save_dir):
+def evaluate_and_save_dashboard_ensemble(model, dataloader, scaler_y, device, save_dir):
     model.eval()
     mu_list, v_list, alpha_list, beta_list, targets_list = [], [], [], [], []
 
     with torch.no_grad():
         for x, y in dataloader:
             x = x.to(device)
-            mu, v, alpha, beta = model(x)
+            outputs = model(x)
+            mu, v, alpha, beta = outputs
+
+            if mu.dim() == 3:
+                mu = mu.mean(dim=0)
+                v = v.mean(dim=0)
+                alpha = alpha.mean(dim=0)
+                beta = beta.mean(dim=0)
+
             mu_list.append(mu.cpu().numpy())
             v_list.append(v.cpu().numpy())
             alpha_list.append(alpha.cpu().numpy())
@@ -36,7 +44,6 @@ def evaluate_and_save_dashboard(model, dataloader, scaler_y, device, save_dir):
     beta = np.vstack(beta_list)
     targets = np.vstack(targets_list)
 
-    # Inverse transform if needed
     if scaler_y is not None:
         mu = scaler_y.inverse_transform(mu)
         targets = scaler_y.inverse_transform(targets)
@@ -53,7 +60,7 @@ def evaluate_and_save_dashboard(model, dataloader, scaler_y, device, save_dir):
 
     os.makedirs(save_dir, exist_ok=True)
 
-    # Plot 1: True vs Predicted
+    # Plot 1: True vs Predicted with uncertainty
     plt.figure(figsize=(8, 6))
     sns.scatterplot(x=targets.flatten(), y=mu.flatten(), alpha=0.6)
     plt.errorbar(targets.flatten(), mu.flatten(), yerr=sigma.flatten(), fmt='o', alpha=0.2, color='gray')
@@ -63,10 +70,11 @@ def evaluate_and_save_dashboard(model, dataloader, scaler_y, device, save_dir):
     plt.title(f"True vs. Predicted Wine Quality (R²={r2:.2f})")
     plt.grid(True)
     plt.tight_layout()
-    path = os.path.join(save_dir, "true_vs_pred.png")
-    plt.savefig(path)
-    print(f"Saved: {path}")
+    filename = "true_vs_pred.png"
+    filepath = os.path.join(save_dir, filename)
+    plt.savefig(filepath)
     plt.close()
+    print(f"Saved plot: {filepath}")
 
     # Plot 2: Residual Distribution
     residuals = mu.flatten() - targets.flatten()
@@ -77,10 +85,11 @@ def evaluate_and_save_dashboard(model, dataloader, scaler_y, device, save_dir):
     plt.xlabel("Residual (Pred - True)")
     plt.grid(True)
     plt.tight_layout()
-    path = os.path.join(save_dir, "residual_hist.png")
-    plt.savefig(path)
-    print(f"Saved: {path}")
+    filename = "residual_hist.png"
+    filepath = os.path.join(save_dir, filename)
+    plt.savefig(filepath)
     plt.close()
+    print(f"Saved plot: {filepath}")
 
     # Plot 3: Residuals vs True
     plt.figure(figsize=(8, 6))
@@ -91,13 +100,14 @@ def evaluate_and_save_dashboard(model, dataloader, scaler_y, device, save_dir):
     plt.ylabel("Residual (Pred - True)")
     plt.grid(True)
     plt.tight_layout()
-    path = os.path.join(save_dir, "residuals_vs_true.png")
-    plt.savefig(path)
-    print(f"Saved: {path}")
+    filename = "residuals_vs_true.png"
+    filepath = os.path.join(save_dir, filename)
+    plt.savefig(filepath)
     plt.close()
+    print(f"Saved plot: {filepath}")
 
     # Plot 4: Uncertainty vs Absolute Error
-    abs_error = np.abs(mu.flatten() - targets.flatten())
+    abs_error = np.abs(residuals)
     plt.figure(figsize=(8, 6))
     sns.scatterplot(x=sigma.flatten(), y=abs_error, alpha=0.5)
     plt.xlabel("Predicted Std Dev (Uncertainty)")
@@ -105,23 +115,24 @@ def evaluate_and_save_dashboard(model, dataloader, scaler_y, device, save_dir):
     plt.title("Uncertainty vs Absolute Error")
     plt.grid(True)
     plt.tight_layout()
-    path = os.path.join(save_dir, "uncertainty_vs_error.png")
-    plt.savefig(path)
-    print(f"Saved: {path}")
+    filename = "uncertainty_vs_error.png"
+    filepath = os.path.join(save_dir, filename)
+    plt.savefig(filepath)
     plt.close()
+    print(f"Saved plot: {filepath}")
 
     # Plot 5–8: Histograms for EDNN parameters
-    hist_params = [("mu", mu), ("v", v), ("alpha", alpha), ("beta", beta)]
-    for name, arr in hist_params:
+    for name, arr in [("mu", mu), ("v", v), ("alpha", alpha), ("beta", beta)]:
         plt.figure(figsize=(7, 5))
         sns.histplot(arr.flatten(), bins=30, kde=True)
         plt.title(f"Distribution of {name}")
         plt.grid(True)
         plt.tight_layout()
-        path = os.path.join(save_dir, f"dist_{name}.png")
-        plt.savefig(path)
-        print(f"Saved: {path}")
+        filename = f"dist_{name}.png"
+        filepath = os.path.join(save_dir, filename)
+        plt.savefig(filepath)
         plt.close()
+        print(f"Saved plot: {filepath}")
 
 
 def main():
@@ -143,16 +154,28 @@ def main():
     input_dim = X_scaled.shape[1]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = EvidentialNet(input_dim).to(device)
-    model.load_state_dict(torch.load(
-        "assets/pth/ednn_regression__wine_quality_white/ednn__wine-quality-white.pt",
-        map_location=device
-    ))
+    base_config = {
+        "input_dim": input_dim,
+        "hidden_dims": [64, 64],
+        "output_type": "evidential",
+        "use_dropout": False,
+        "dropout_p": 0.2,
+        "flatten_input": False,
+        "use_batchnorm": False,
+        "activation_name": "relu",
+    }
+    model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
 
-    # Use consistent output path based on filename
-    script_name = os.path.splitext(os.path.basename(__file__))[0]
-    save_dir = os.path.join(VIZ_PATH, script_name)
-    evaluate_and_save_dashboard(model, loader, scaler_y, device, save_dir)
+    model_path = "assets/pth/ednn_regression__wine_quality_white/ednn__wine-quality-white.pt"
+    if os.path.isfile(model_path):
+        model.load_state_dict(torch.load(model_path, map_location=device))
+    else:
+        print(f"Model file not found at '{model_path}'. Initializing and saving new model.")
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        torch.save(model.state_dict(), model_path)
+
+    save_dir = os.path.join(VIZ_PATH, "ednn_regression__wine_quality_white")
+    evaluate_and_save_dashboard_ensemble(model, loader, scaler_y, device, save_dir)
 
 
 if __name__ == "__main__":
