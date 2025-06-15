@@ -17,7 +17,6 @@ import os
 import torch
 
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
-from pathlib import Path
 
 
 def train_one_epoch(model, dataloader, optimizer, device):
@@ -133,48 +132,3 @@ def train_with_early_stopping(
         if epochs_no_improve >= patience:
             print(f"Early stopping at epoch {epoch+1}")
             break
-
-
-def get_dataset_root(path):
-    """
-    Extract the dataset root directory containing the specified folder.
-
-    This function resolves the given file path, searches for the
-    folder named "BA__U-i-mlb-Sm-f-d-s-V-a-S" in the path parts, and returns
-    the directory path up to and including that folder. If the folder is not
-    found, it returns the parent directory of the given path.
-
-    Parameters
-    ----------
-    path : str or Path
-        The input file path (usually to a CSV file).
-
-    Returns
-    -------
-    str
-        The resolved dataset root directory path containing the target folder.
-
-    Raises
-    ------
-    None
-
-    Examples
-    --------
-    >>> get_dataset_root("/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/data/raw/dataset__fmnist/fashion-mnist_train.csv")
-    '/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/data/raw/dataset__fmnist'
-
-    >>> get_dataset_root("/some/other/path/file.csv")
-    '/some/other/path'
-    """
-    p = Path(path).resolve()
-
-    parts = p.parts
-    try:
-        idx = parts.index("BA__U-i-mlb-Sm-f-d-s-V-a-S")
-    except ValueError:
-        return str(p.parent)
-
-    root = Path(*parts[: idx + 1])
-    relative = Path(*parts[idx + 1 :])
-
-    return str(root / relative.parent)

@@ -1,57 +1,105 @@
 # BA__Projekt/tests/test__ednn_regression__energy_efficiency.py
-
 import unittest
-
+import os
+import shutil
 import torch
 from torch.utils.data import DataLoader
+from sklearn.preprocessing import StandardScaler
 
-from BA__Programmierung.ml.datasets.dataset__torch__energy_efficiency import (
-    load_energy_efficiency_dataset,
-)
-from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
-from models.model__ednn_deep import EvidentialNetDeep as EvidentialNet
+from BA__Programmierung.ml.datasets.dataset__torch__energy_efficiency import EnergyEfficiencyDataset
+from models.model__generic_ensemble import GenericEnsembleRegressor
+from BA__Programmierung.viz.viz__ednn_regression__energy_efficiency import evaluate_and_visualize_and_save
 
 
-class TestEvidentialRegressionEnergyEfficiency(unittest.TestCase):
+class TestEvidentialRegressionEnergyEfficiencyEnsemble(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.device = "cpu"
-        cls.dataset = load_energy_efficiency_dataset(
-            "/root/BA__Projekt/assets/data/raw/dataset__energy-efficiency/dataset__energy-efficiency.csv"
+        # Load dataset and prepare dataloader
+        dataset_path = "assets/data/raw/dataset__energy-efficiency/dataset__energy-efficiency.csv"
+        full_dataset = EnergyEfficiencyDataset(dataset_path)
+        train_size = int(0.8 * len(full_dataset))
+        test_size = len(full_dataset) - train_size
+        train_dataset, test_dataset = torch.utils.data.random_split(
+            full_dataset, [train_size, test_size], generator=torch.Generator().manual_seed(42)
         )
-        cls.loader = DataLoader(cls.dataset, batch_size=32, shuffle=False)
-        cls.model = EvidentialNet(input_dim=8).to(cls.device)  # Energy dataset has 8 features
+
+        def extract_xy(dataset):
+            X = torch.stack([item[0] for item in dataset])
+            Y = torch.stack([item[1] for item in dataset])
+            return X.numpy(), Y.numpy()
+
+        X_train, Y_train = extract_xy(train_dataset)
+        X_test, Y_test = extract_xy(test_dataset)
+
+        cls.scaler_x = StandardScaler().fit(X_train)
+        cls.scaler_y = StandardScaler().fit(Y_train)
+
+        X_test_scaled = torch.tensor(cls.scaler_x.transform(X_test), dtype=torch.float32)
+        Y_test_scaled = torch.tensor(cls.scaler_y.transform(Y_test), dtype=torch.float32)
+
+        cls.test_loader = DataLoader(torch.utils.data.TensorDataset(X_test_scaled, Y_test_scaled), batch_size=64, shuffle=False)
+        cls.device = torch.device("cpu")
+        input_dim = X_test_scaled.shape[1]
+
+        base_config = {
+            "input_dim": input_dim,
+            "hidden_dims": [64, 64],
+            "output_type": "evidential",
+            "use_dropout": False,
+            "dropout_p": 0.2,
+            "flatten_input": False,
+            "use_batchnorm": False,
+            "activation_name": "relu",
+        }
+
+        cls.model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(cls.device)
+
+        model_path = "assets/models/pth/ednn_regression__energy_efficiency_ensemble/ednn_regression__energy_efficiency_ensemble.pth"
+        cls.model.load_state_dict(torch.load(model_path, map_location=cls.device))
         cls.model.eval()
 
-    def test_forward_output_shapes(self):
-        for X, _ in self.loader:
-            X = X.to(self.device)
-            mu, v, alpha, beta = self.model(X)
+        # Directory for saving plots during tests
+        cls.test_save_dir = "test_viz_output"
+        # Clean if exists from previous runs
+        if os.path.exists(cls.test_save_dir):
+            shutil.rmtree(cls.test_save_dir)
 
-            self.assertEqual(mu.shape, (X.shape[0], 1), "mu shape mismatch")
-            self.assertEqual(v.shape, (X.shape[0], 1), "v shape mismatch")
-            self.assertEqual(alpha.shape, (X.shape[0], 1), "alpha shape mismatch")
-            self.assertEqual(beta.shape, (X.shape[0], 1), "beta shape mismatch")
+    def test_model_forward_and_shapes(self):
+        # Test model output shapes from the ensemble
+        for x, y in self.test_loader:
+            x = x.to(self.device)
+            outputs = self.model(x)
+            # output is a tuple or list, where output[0] is predictions from first ensemble model
+            self.assertTrue(len(outputs) > 0)
+            preds = outputs[0]
+            self.assertEqual(preds.shape[0], x.shape[0])
             break
 
-    def test_output_ranges(self):
-        for X, _ in self.loader:
-            X = X.to(self.device)
-            _, v, alpha, beta = self.model(X)
+    def test_evaluate_and_save_plots(self):
+        # This calls the updated evaluation function that saves plots
+        evaluate_and_visualize_and_save(
+            self.model,
+            self.test_loader,
+            self.scaler_y,
+            self.device,
+            self.test_save_dir,
+        )
 
-            self.assertTrue(torch.all(v > 0), "v should be positive")
-            self.assertTrue(torch.all(alpha > 1), "alpha should be > 1")
-            self.assertTrue(torch.all(beta > 0), "beta should be positive")
-            break
+        # Check that plot files exist
+        expected_files = [
+            "true_vs_pred.png",
+            "residual_hist.png",
+            "residuals_vs_true.png",
+        ]
+        for filename in expected_files:
+            filepath = os.path.join(self.test_save_dir, filename)
+            self.assertTrue(os.path.isfile(filepath), f"Plot file {filename} was not saved.")
 
-    def test_loss_computation(self):
-        for X, y in self.loader:
-            X, y = X.to(self.device), y.to(self.device)
-            mu, v, alpha, beta = self.model(X)
-            loss = evidential_loss(y, mu, v, alpha, beta)
-            self.assertIsInstance(loss.item(), float)
-            self.assertGreater(loss.item(), 0.0, "Loss should be positive")
-            break
+    @classmethod
+    def tearDownClass(cls):
+        # Optionally clean up the saved plots directory after tests
+        if os.path.exists(cls.test_save_dir):
+            shutil.rmtree(cls.test_save_dir)
 
 
 if __name__ == "__main__":

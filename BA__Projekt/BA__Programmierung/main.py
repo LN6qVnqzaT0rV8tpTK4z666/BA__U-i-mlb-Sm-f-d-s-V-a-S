@@ -21,7 +21,7 @@ SKIP_TOKENS = {
     "combined_cycle_power_plant",
     "concrete_compressive_strength",
     "condition_based_maintenance_of_naval_propulsion_plants",
-    "energy_efficiency",
+    # "energy_efficiency",
     "fmnist",
     # "iris",
     # "kin8nm",

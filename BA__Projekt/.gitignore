@@ -41,3 +41,6 @@ assets/viz/
 !BA__Programmierung/ml/ednn_regression__iris.py
 !viz__ednn_regression__iris.py
 !tests/test__ednn_regression__iris.py
+!BA__Programmierung/ml/ednn_regression__energy_efficiency.py
+!viz__energy_efficiency.py
+!tests/test__energy_efficiency.py
