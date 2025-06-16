@@ -29,7 +29,7 @@ class TestEvidentialEnsembleRegressionBostonHousing(unittest.TestCase):
         cls.loader = DataLoader(cls.dataset, batch_size=32, shuffle=False)
 
         # Ensemble setup
-        model_dir = "/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/pth/ednn_regression__boston_housing"
+        model_dir = "/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/models/pth/ednn_regression__boston_housing"
         base_config = {"input_dim": 13, "hidden_dims": [64, 64], "output_type": "evidential"}
 
         model_files = sorted([f for f in os.listdir(model_dir) if f.startswith("model_") and f.endswith(".pth")])
@@ -46,7 +46,7 @@ class TestEvidentialEnsembleRegressionBostonHousing(unittest.TestCase):
             X = X.to(self.device)
             mu, v, alpha, beta = self.ensemble(X)
 
-            self.assertEqual(mu.shape, (len(self.ensemble.models), X.shape[0], 1))
+            self.assertEqual(mu.shape, (X.shape[0], 1))  # Instead of (n_models, X.shape[0], 1)
             self.assertEqual(v.shape, mu.shape)
             self.assertEqual(alpha.shape, mu.shape)
             self.assertEqual(beta.shape, mu.shape)

@@ -1,4 +1,16 @@
 # BA__Projekt/BA__Programmierung/conv/conversion__xlsx_to_csv.py
+"""
+Module for converting Excel files (.xlsx, .xls) to CSV format.
+
+This module provides functions to convert a single Excel file to CSV,
+and to process entire directories containing datasets in Excel format,
+saving converted CSV files while preserving the directory structure.
+
+Functions:
+    - convert_excel_to_csv(excel_path, output_path): Convert one Excel file to CSV.
+    - process_datasets(base_input_dir, base_output_dir): Convert all Excel datasets
+      found in the base input directory to CSV format in the base output directory.
+"""
 
 import os
 
@@ -6,6 +18,16 @@ import pandas as pd
 
 
 def convert_excel_to_csv(excel_path, output_path):
+    """
+    Convert a single Excel file to a CSV file.
+
+    Args:
+        excel_path (str or Path): Path to the input Excel file (.xlsx or .xls).
+        output_path (str or Path): Path where the output CSV file will be saved.
+
+    Prints:
+        Success message on conversion, or error message on failure.
+    """
     try:
         df = pd.read_excel(excel_path)
         df.to_csv(output_path, index=False)
@@ -15,6 +37,21 @@ def convert_excel_to_csv(excel_path, output_path):
 
 
 def process_datasets(base_input_dir, base_output_dir):
+    """
+    Process all datasets in the base input directory, converting Excel files to CSV files.
+
+    This function scans subdirectories starting with "dataset__" inside the base input directory.
+    For each such directory, it converts the first found Excel file (.xlsx or .xls) to CSV,
+    preserving the relative directory structure under the base output directory.
+
+    Args:
+        base_input_dir (str or Path): Directory containing Excel dataset subdirectories.
+        base_output_dir (str or Path): Directory where converted CSV datasets will be saved.
+
+    Prints:
+        Informational messages about scanning directories, conversion progress,
+        and warnings if no Excel file is found.
+    """
     if not os.path.isdir(base_input_dir):
         print(f"[Error] Base input directory '{base_input_dir}' does not exist.")
         return

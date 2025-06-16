@@ -1,5 +1,18 @@
 # BA__Projekt/BA__Programmierung/db/persist.py
+"""
+Module for persisting raw dataset CSV files and associated SQLite databases into DuckDB files.
 
+This module scans a raw data directory for dataset CSV files, converts them into
+DuckDB database tables, and imports any associated SQLite database tables
+for unified, fast querying. It also sets up logging for the persistence process.
+
+Functions:
+    - find_csv_files(base_path): Find all CSV files recursively under a base directory.
+    - find_sqlite_for_dataset(dataset_dir): Locate a SQLite database file in the dataset directory.
+    - derive_dataset_name(csv_path): Derive the dataset name from the CSV file path.
+    - db__persist(): Main function to persist datasets into DuckDB with logging and console output.
+
+"""
 from datetime import datetime
 
 import duckdb

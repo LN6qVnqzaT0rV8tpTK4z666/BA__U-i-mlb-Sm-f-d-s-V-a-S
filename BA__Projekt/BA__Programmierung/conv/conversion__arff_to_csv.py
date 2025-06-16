@@ -1,4 +1,15 @@
-# BA__Projekt/BA__Programmierung/conv/conversion__arff_to_csv.py
+"""
+Module for converting datasets from ARFF format to CSV format.
+
+This module provides functions to convert individual ARFF files to CSV,
+and to process entire directories containing datasets in ARFF format,
+saving converted CSV files preserving the directory structure.
+
+Functions:
+    - convert_arff_to_csv(arff_path, output_path): Convert a single ARFF file to CSV.
+    - process_datasets(base_input_dir, base_output_dir): Convert all datasets found in
+      base input directory from ARFF to CSV format, saving results in the base output directory.
+"""
 
 import os
 
@@ -7,6 +18,16 @@ from scipy.io import arff
 
 
 def convert_arff_to_csv(arff_path, output_path):
+    """
+    Convert a single ARFF file to a CSV file.
+
+    Args:
+        arff_path (str or Path): Path to the input ARFF file.
+        output_path (str or Path): Path where the output CSV file will be saved.
+
+    Prints:
+        Confirmation message on successful conversion, or error message if failed.
+    """
     try:
         data, meta = arff.loadarff(arff_path)
         df = pd.DataFrame(data)
@@ -17,6 +38,21 @@ def convert_arff_to_csv(arff_path, output_path):
 
 
 def process_datasets(base_input_dir, base_output_dir):
+    """
+    Process all datasets in the base input directory, converting ARFF files to CSV.
+
+    The function searches for subdirectories starting with "dataset__" inside the
+    base input directory. For each such directory, it converts the first ARFF file found
+    into CSV, preserving the relative directory structure under the base output directory.
+
+    Args:
+        base_input_dir (str or Path): Path to the directory containing ARFF datasets.
+        base_output_dir (str or Path): Path where converted CSV datasets will be saved.
+
+    Prints:
+        Informational messages about scanning directories, conversion success,
+        and warnings if no ARFF file is found.
+    """
     if not os.path.isdir(base_input_dir):
         print(f"[Error] Base input directory '{base_input_dir}' does not exist.")
         return

@@ -1,9 +1,11 @@
 # BA__Projekt/BA__Programmierung/viz/viz__ednn_regression__wine_quality_red.py
+
 import os
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import torch
+
 from sklearn.metrics import mean_absolute_percentage_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader

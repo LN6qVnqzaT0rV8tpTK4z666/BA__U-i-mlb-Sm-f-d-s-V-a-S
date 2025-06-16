@@ -14,7 +14,6 @@ GenericRegressor
     A modular MLP supporting both standard and evidential regression.
 """
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as tnf
 
@@ -43,34 +42,12 @@ def get_activation(name):
 
 
 class GenericRegressor(nn.Module):
-    """
-    A configurable neural network model supporting standard and evidential regression.
-
-    Parameters
-    ----------
-    input_dim : int
-        Number of input features.
-    hidden_dims : list of int, optional
-        Sizes of hidden layers, by default [64, 64].
-    output_type : str, optional
-        Type of output layer: either 'regression' or 'evidential', by default 'regression'.
-    use_dropout : bool, optional
-        Whether to apply dropout after each hidden layer, by default False.
-    dropout_p : float, optional
-        Dropout probability if dropout is used, by default 0.2.
-    flatten_input : bool, optional
-        Whether to flatten the input tensor before processing, by default False.
-    use_batchnorm : bool, optional
-        Whether to apply Batch Normalization between layers, by default False.
-    activation_name : str, optional
-        Activation function name ('relu', 'leaky_relu', 'gelu', 'elu'), by default 'relu'.
-    """
-
     def __init__(
         self,
         input_dim,
         hidden_dims=[64, 64],
         output_type="regression",
+        output_dim=1,  # <-- Add this
         use_dropout=False,
         dropout_p=0.2,
         flatten_input=False,
@@ -79,6 +56,7 @@ class GenericRegressor(nn.Module):
     ):
         super().__init__()
         self.output_type = output_type
+        self.output_dim = output_dim  # <-- Store output_dim
         self.flatten_input = flatten_input
 
         activation = get_activation(activation_name)
@@ -97,12 +75,14 @@ class GenericRegressor(nn.Module):
         self.hidden = nn.Sequential(*layers)
 
         if output_type == "regression":
-            self.output = nn.Linear(prev_dim, 1)
+            self.output = nn.Linear(prev_dim, output_dim)
+
         elif output_type == "evidential":
-            self.out_mu = nn.Linear(prev_dim, 1)
-            self.out_log_v = nn.Linear(prev_dim, 1)
-            self.out_log_alpha = nn.Linear(prev_dim, 1)
-            self.out_log_beta = nn.Linear(prev_dim, 1)
+            self.out_mu = nn.Linear(prev_dim, output_dim)
+            self.out_log_v = nn.Linear(prev_dim, output_dim)
+            self.out_log_alpha = nn.Linear(prev_dim, output_dim)
+            self.out_log_beta = nn.Linear(prev_dim, output_dim)
+
         else:
             raise ValueError(f"Unknown output_type: {output_type}")
 
@@ -113,20 +93,6 @@ class GenericRegressor(nn.Module):
                     nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
-        """
-        Forward pass through the network.
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Input tensor of shape (batch_size, input_dim).
-
-        Returns
-        -------
-        torch.Tensor or tuple
-            Output tensor(s). For evidential regression, returns a tuple:
-            (mu, v, alpha, beta).
-        """
         if self.flatten_input:
             x = x.view(x.size(0), -1)
         x = self.hidden(x)
@@ -140,60 +106,3 @@ class GenericRegressor(nn.Module):
             alpha = tnf.softplus(self.out_log_alpha(x)) + 1.0
             beta = tnf.softplus(self.out_log_beta(x)) + 1e-6
             return mu, v, alpha, beta
-
-    def predict(self, x):
-        """
-        Convenience method for inference with no gradient computation.
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Input tensor.
-
-        Returns
-        -------
-        torch.Tensor or tuple
-            Model output.
-        """
-        self.eval()
-        with torch.no_grad():
-            return self.forward(x)
-
-    def forward_regression(self, x):
-        """
-        Direct forward method for standard regression mode.
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Input tensor.
-
-        Returns
-        -------
-        torch.Tensor
-            Regression output.
-        """
-        assert self.output_type == "regression"
-        return self.output(self.hidden(x))
-
-    def forward_evidential(self, x):
-        """
-        Direct forward method for evidential regression mode.
-
-        Parameters
-        ----------
-        x : torch.Tensor
-            Input tensor.
-
-        Returns
-        -------
-        tuple
-            (mu, v, alpha, beta) outputs for evidential modeling.
-        """
-        assert self.output_type == "evidential"
-        x = self.hidden(x)
-        mu = self.out_mu(x)
-        v = tnf.softplus(self.out_log_v(x)) + 1e-6
-        alpha = tnf.softplus(self.out_log_alpha(x)) + 1.0
-        beta = tnf.softplus(self.out_log_beta(x)) + 1e-6
-        return mu, v, alpha, beta

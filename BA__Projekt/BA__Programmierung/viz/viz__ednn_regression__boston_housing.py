@@ -9,8 +9,8 @@ import torch
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from torch.utils.data import DataLoader
 
+from torch.utils.data import DataLoader
 from BA__Programmierung.ml.datasets.dataset__torch__boston_housing import DatasetTorchBostonHousing
 from models.model__generic_ensemble import GenericEnsembleRegressor
 
@@ -155,7 +155,7 @@ def main():
         "hidden_dims": [64, 64],
         "output_type": "evidential"
     }
-    model_dir = "/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/pth/ednn_regression__boston_housing"
+    model_dir = "/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/models/pth/ednn_regression__boston_housing"
 
     dataset = DatasetTorchBostonHousing(
         csv_path="assets/data/raw/dataset__boston-housing/dataset__boston-housing.csv"
@@ -170,7 +170,7 @@ def main():
     )
 
     save_dir = os.path.join(
-        "assets", "visualizations", "ednn_regression__boston_housing"
+        "assets", "viz", "ednn_regression__boston_housing"
     )
     evaluate_and_save_dashboard_ensemble(mu_mean, aleatoric, epistemic, total_uncertainty, y_true, dataset, save_dir)
     print(f"Visualizations saved to: {save_dir}")

@@ -1,4 +1,16 @@
-# BA__Projekt/BA__Programmierung/conv/conversion__txt_to_csv.py
+"""
+Module for converting datasets from TXT format to CSV format.
+
+This module provides functions to convert individual TXT files to CSV,
+handling encoding issues gracefully, and to process entire directories
+containing datasets in TXT format, saving converted CSV files while preserving
+directory structure.
+
+Functions:
+    - convert_txt_to_csv(txt_path, output_path): Convert a single TXT file to CSV.
+    - process_txt_datasets(base_input_dir, base_output_dir): Convert all TXT datasets
+      found in the base input directory to CSV format in the base output directory.
+"""
 
 import os
 
@@ -6,6 +18,21 @@ import pandas as pd
 
 
 def convert_txt_to_csv(txt_path, output_path):
+    """
+    Convert a single TXT file to a CSV file.
+
+    The function attempts to read the TXT file using UTF-8 encoding, falling back to
+    Latin-1 encoding if UTF-8 decoding fails. Each line is split by whitespace and
+    saved as rows in a CSV file without headers or indexes.
+
+    Args:
+        txt_path (str or Path): Path to the input TXT file.
+        output_path (str or Path): Path where the output CSV file will be saved.
+
+    Prints:
+        Conversion success message or error message on failure.
+        Warning message if fallback encoding is used.
+    """
     try:
         # Attempt to read with utf-8
         try:
@@ -28,6 +55,22 @@ def convert_txt_to_csv(txt_path, output_path):
 
 
 def process_txt_datasets(base_input_dir, base_output_dir):
+    """
+    Process all TXT datasets in the base input directory, converting them to CSV files.
+
+    The function searches for subdirectories starting with "dataset__" inside the
+    base input directory. For each such directory, it converts all valid TXT files
+    (excluding files starting with "readme") into CSV files, preserving the relative
+    directory structure under the base output directory.
+
+    Args:
+        base_input_dir (str or Path): Path to the directory containing TXT datasets.
+        base_output_dir (str or Path): Path where converted CSV datasets will be saved.
+
+    Prints:
+        Informational messages about scanning directories, conversion progress,
+        and warnings if no valid TXT files are found.
+    """
     if not os.path.isdir(base_input_dir):
         print(f"[Error] Base input directory '{base_input_dir}' does not exist.")
         return

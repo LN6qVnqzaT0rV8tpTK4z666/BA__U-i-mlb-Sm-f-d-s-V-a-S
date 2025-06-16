@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import torch
+
 from sklearn.metrics import mean_absolute_percentage_error, r2_score
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import DataLoader
@@ -166,7 +167,7 @@ def main():
     }
     model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
 
-    model_path = "assets/pth/ednn_regression__wine_quality_white/ednn__wine-quality-white.pt"
+    model_path = "assets/models/pth/ednn_regression__wine_quality_white_ensemble/generic_ensemble__wine-quality-white.pt"
     if os.path.isfile(model_path):
         model.load_state_dict(torch.load(model_path, map_location=device))
     else:

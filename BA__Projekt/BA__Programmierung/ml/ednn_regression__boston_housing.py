@@ -38,8 +38,7 @@ def main():
     seed = 42
 
     # Save directory
-    script_name = os.path.basename(__file__)
-    model_save_dir = get_model_save_dir(script_name)
+    model_save_dir = "/root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/assets/models/pth/ednn_regression__boston_housing"
 
     for i in range(n_models):
         # Seeded initialization
