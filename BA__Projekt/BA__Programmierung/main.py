@@ -19,8 +19,8 @@ from BA__Programmierung.db.persist import db__persist
 # Define tokens for which training and viz should be skipped, add your manual tokens here, e.g.:
 SKIP_TOKENS = {
     "boston_housing",
-    # "combined_cycle_power_plant",
-    "concrete_compressive_strength",
+    "combined_cycle_power_plant",
+    # "concrete_compressive_strength",
     "condition_based_maintenance_of_naval_propulsion_plants",
     "energy_efficiency",
     "fmnist",

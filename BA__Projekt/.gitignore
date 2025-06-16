@@ -50,3 +50,6 @@ assets/viz/
 !BA__Programmierung/ml/ednn_regression__combined_cycle_power_plant.py
 !viz__ednn_regression__combined_cycle_power_plant.py
 !tests/test__combined_cycle_power_plant.py
+!BA__Programmierung/ml/ednn_regression__concrete_compressive_strength.py
+!viz__ednn_regression__concrete_compressive_strength.py
+!tests/test__concrete_compressive_strength.py
