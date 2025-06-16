@@ -8,6 +8,7 @@ Submodules
    :maxdepth: 4
 
    BA__Programmierung.viz.viz__ednn_classification__cifar_10_python
+   BA__Programmierung.viz.viz__ednn_classification__fmnist
    BA__Programmierung.viz.viz__ednn_classification__kmnist
    BA__Programmierung.viz.viz__ednn_classification__mnist
    BA__Programmierung.viz.viz__ednn_regression__boston_housing
@@ -15,7 +16,6 @@ Submodules
    BA__Programmierung.viz.viz__ednn_regression__concrete_compressive_strength
    BA__Programmierung.viz.viz__ednn_regression__condition_based_maintenance_of_naval_propulsion_plants
    BA__Programmierung.viz.viz__ednn_regression__energy_efficiency
-   BA__Programmierung.viz.viz__ednn_regression__fmnist
    BA__Programmierung.viz.viz__ednn_regression__iris
    BA__Programmierung.viz.viz__ednn_regression__kin8nm
    BA__Programmierung.viz.viz__ednn_regression__nmavani_func1

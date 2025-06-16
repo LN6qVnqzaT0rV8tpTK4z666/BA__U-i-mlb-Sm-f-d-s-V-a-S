@@ -47,3 +47,6 @@ assets/viz/
 !BA__Programmierung/ml/ednn_regression__boston_housing.py
 !viz__ednn_regression__boston_housing.py
 !tests/test__boston_housing.py
+!BA__Programmierung/ml/ednn_regression__combined_cycle_power_plant.py
+!viz__ednn_regression__combined_cycle_power_plant.py
+!tests/test__combined_cycle_power_plant.py
