@@ -15,19 +15,20 @@ from rich.console import Console
 from BA__Programmierung.config import ML_DIR
 from BA__Programmierung.db.persist import db__persist
 
+
 # Define tokens for which training and viz should be skipped, add your manual tokens here, e.g.:
 SKIP_TOKENS = {
-    "boston_housing",
+    # "boston_housing",
     "combined_cycle_power_plant",
     "concrete_compressive_strength",
     "condition_based_maintenance_of_naval_propulsion_plants",
-    # "energy_efficiency",
+    "energy_efficiency",
     "fmnist",
-    # "iris",
-    # "kin8nm",
-    # "nmavani_func1",
-    # "wine_quality_red",
-    # "wine_quality_white"
+    "iris",
+    "kin8nm",
+    "nmavani_func1",
+    "wine_quality_red",
+    "wine_quality_white"
 }
 
 
