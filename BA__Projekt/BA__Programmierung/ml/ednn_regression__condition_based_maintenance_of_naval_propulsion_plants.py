@@ -9,6 +9,7 @@ This script:
 - Trains the model using early stopping
 """
 
+import os
 import torch
 from torch.utils.data import DataLoader, random_split
 
@@ -20,37 +21,34 @@ from models.model__generic_ensemble import GenericEnsembleRegressor
 def main():
     # === Configuration ===
     csv_path = "assets/data/raw/dataset__condition-based-maintenance-of-naval-propulsion-plants/data.csv"
-    model_path = "assets/models/pth/ednn_regression__condition_based_maintenance_of_naval_propulsion_plants/ednn_regression__condition_based_maintenance_of_naval_propulsion_plants.pth"
     batch_size = 64
     learning_rate = 1e-3
     ensemble_size = 5
-    expected_input_dim = 16  # Set to 16 if your dataset has 16 features
+    expected_input_dim = 16  # Dataset features count
+
+    # Base model save directory
+    model_save_base = "assets/models/pth/ednn_regression__condition_based_maintenance_of_naval_propulsion_plants"
 
     # === Load dataset ===
     dataset = NavalPropulsionDataset(csv_path)
 
-    # Verify dataset input dimension matches expected (16)
     actual_input_dim = dataset[0][0].shape[0]
-    assert actual_input_dim == expected_input_dim, f"Dataset input dim {actual_input_dim} does not match expected {expected_input_dim}"
+    assert actual_input_dim == expected_input_dim, f"Input dim mismatch: {actual_input_dim} != {expected_input_dim}"
 
-    # Split dataset into train and validation sets (80/20)
+    # Split dataset
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
-    train_set, val_set = random_split(
-        dataset,
-        [train_size, val_size],
-        generator=torch.Generator().manual_seed(42)
-    )
+    train_set, val_set = random_split(dataset, [train_size, val_size], generator=torch.Generator().manual_seed(42))
 
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False)
 
-    # === Device setup ===
+    # Device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # === Model configuration ===
+    # Base model config
     base_config = {
-        "input_dim": expected_input_dim,  # 16 features input
+        "input_dim": expected_input_dim,
         "hidden_dims": [64, 64],
         "output_type": "evidential",
         "use_dropout": False,
@@ -58,16 +56,39 @@ def main():
         "flatten_input": False,
         "use_batchnorm": False,
         "activation_name": "relu",
-        "output_dim": 1
+        "output_dim": 1,
     }
 
-    # Initialize ensemble model
-    model = GenericEnsembleRegressor(base_config=base_config, n_models=ensemble_size).to(device)
+    # Training params
+    n_models = ensemble_size
+    seed = 42
+    # metric_bundles = Metrics.get_metric_bundles()
+    loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    for loss_mode in loss_modes:
+        model_save_dir = os.path.join(model_save_base, loss_mode)
+        os.makedirs(model_save_dir, exist_ok=True)
 
-    # === Train model with early stopping ===
-    train_with_early_stopping(model, train_loader, val_loader, optimizer, model_path, device)
+        for i in range(n_models):
+            torch.manual_seed(seed + i)
+
+            model = GenericEnsembleRegressor(base_config=base_config, n_models=ensemble_size).to(device)
+            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+            model_path = os.path.join(model_save_dir, f"model_{i}.pth")
+            print(f"[{loss_mode.upper()}] Training model {i + 1}/{n_models}...")
+
+            train_with_early_stopping(
+                model=model,
+                train_loader=train_loader,
+                val_loader=val_loader,
+                optimizer=optimizer,
+                model_path=model_path,
+                device=device,
+                epochs=100,
+                patience=10,
+                loss_mode=loss_mode
+            )
 
 
 if __name__ == "__main__":

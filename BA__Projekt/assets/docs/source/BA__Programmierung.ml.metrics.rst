@@ -8,6 +8,7 @@ Submodules
    :maxdepth: 4
 
    BA__Programmierung.ml.metrics.metrics
+   BA__Programmierung.ml.metrics.metrics_registry
 
 Module contents
 ---------------

@@ -1,5 +1,4 @@
 # BA__Projekt/BA__Programmierung/ml/ednn_regression__energy-efficiency.py
-
 import os
 import torch
 from torch.utils.data import DataLoader, random_split
@@ -13,6 +12,7 @@ def main():
     dataset_path = "assets/data/raw/dataset__energy-efficiency/dataset__energy-efficiency.csv"
     dataset = EnergyEfficiencyDataset(dataset_path)
 
+    # Split dataset (80/20)
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
     train_set, val_set = random_split(
@@ -28,26 +28,46 @@ def main():
     base_config = {
         "input_dim": input_dim,
         "hidden_dims": [64, 64],
-        "output_type": "evidential",  # assuming evidential regression here
+        "output_type": "evidential",
         "use_dropout": False,
         "dropout_p": 0.2,
         "flatten_input": False,
         "use_batchnorm": False,
         "activation_name": "relu",
     }
-    model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    model_path = "assets/models/pth/ednn_regression__energy_efficiency_ensemble/ednn_regression__energy_efficiency_ensemble.pth"
-    os.makedirs(os.path.dirname(model_path), exist_ok=True)
 
-    train_with_early_stopping(
-        model=model,
-        train_loader=train_loader,
-        val_loader=val_loader,
-        optimizer=optimizer,
-        model_path=model_path,
-        device=device
-    )
+    n_models = 5
+    seed = 42
+    # metric_bundles = Metrics.get_metric_bundles()
+    loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+
+    model_save_base = "assets/models/pth/ednn_regression__energy_efficiency_ensemble"
+
+    for loss_mode in loss_modes:
+        model_save_dir = os.path.join(model_save_base, loss_mode)
+        os.makedirs(model_save_dir, exist_ok=True)
+
+        for i in range(n_models):
+            torch.manual_seed(seed + i)
+
+            model = GenericEnsembleRegressor(base_config=base_config, n_models=n_models).to(device)
+            optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+            model_path = os.path.join(model_save_dir, f"model_{i}.pth")
+            print(f"[{loss_mode.upper()}] Training model {i + 1}/{n_models}...")
+
+            train_with_early_stopping(
+                model=model,
+                train_loader=train_loader,
+                val_loader=val_loader,
+                optimizer=optimizer,
+                model_path=model_path,
+                device=device,
+                epochs=100,
+                patience=10,
+                loss_mode=loss_mode,
+            )
+
 
 if __name__ == "__main__":
     main()

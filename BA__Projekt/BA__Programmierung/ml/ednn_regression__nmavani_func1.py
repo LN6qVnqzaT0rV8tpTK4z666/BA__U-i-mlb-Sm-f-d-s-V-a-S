@@ -16,7 +16,7 @@ Usage:
 Example:
     $ python ednn_regression__nmavani_func1.py
 """
-
+import os
 import torch
 from torch.utils.data import DataLoader, random_split
 
@@ -26,39 +26,25 @@ from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
 
 
 def main():
-    """
-    Main entry point for training.
-
-    Loads the nmavani_func1 dataset from DuckDB, splits it into training and validation sets,
-    prepares DataLoader instances, initializes the model and optimizer, then starts training
-    using early stopping with checkpoint saving.
-
-    No parameters required; paths and hyperparameters are hardcoded.
-
-    Steps:
-    1. Load dataset from DuckDB.
-    2. Split dataset into train (80%) and validation (20%) sets using fixed random seed.
-    3. Create DataLoader instances for train and val sets.
-    4. Setup device (GPU if available, else CPU).
-    5. Configure model parameters and instantiate GenericEnsembleRegressor.
-    6. Setup Adam optimizer.
-    7. Train model with early stopping, saving best checkpoint.
-    """
+    # === Load dataset from DuckDB ===
     db_path = "assets/dbs/dataset__generated-nmavani-func_1.duckdb"
     table_name = "generated_nmavani_func_1_csv"
     dataset = DatasetTorchDuckDBFunc1(db_path=db_path, table_name=table_name)
 
-    train_set, val_set = random_split(
-        dataset,
-        [int(0.8 * len(dataset)), len(dataset) - int(0.8 * len(dataset))],
-        generator=torch.Generator().manual_seed(42),
-    )
+    # === Split dataset into train/val sets (80/20) ===
+    train_size = int(0.8 * len(dataset))
+    val_size = len(dataset) - train_size
+    train_set, val_set = random_split(dataset, [train_size, val_size], generator=torch.Generator().manual_seed(42))
+
+    # === DataLoaders ===
     train_loader = DataLoader(train_set, batch_size=32, shuffle=True)
     val_loader = DataLoader(val_set, batch_size=32, shuffle=False)
 
+    # === Device setup ===
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     input_dim = dataset[0][0].shape[0]
 
+    # === Base model configuration ===
     base_config = {
         "input_dim": input_dim,
         "hidden_dims": [64, 64],
@@ -70,11 +56,38 @@ def main():
         "activation_name": "relu",
     }
 
-    model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
-    model_path = "assets/models/pth/ednn_regression__nmavani_func1/generic_ensemble__nmavani_func1.pt"
+    # === Training configuration ===
+    n_models = 5
+    seed = 42
+    # metric_bundles = Metrics.get_metric_bundles()
+    loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    model_save_base = "assets/models/pth/ednn_regression__nmavani_func1"
 
-    train_with_early_stopping(model, train_loader, val_loader, optimizer, model_path, device)
+    # === Train ensemble for each loss mode ===
+    for loss_mode in loss_modes:
+        model_save_dir = os.path.join(model_save_base, loss_mode)
+        os.makedirs(model_save_dir, exist_ok=True)
+
+        for i in range(n_models):
+            torch.manual_seed(seed + i)
+
+            model = GenericEnsembleRegressor(base_config=base_config, n_models=n_models).to(device)
+            optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+            model_path = os.path.join(model_save_dir, f"model_{i}.pth")
+            print(f"[{loss_mode.upper()}] Training model {i + 1}/{n_models}...")
+
+            train_with_early_stopping(
+                model=model,
+                train_loader=train_loader,
+                val_loader=val_loader,
+                optimizer=optimizer,
+                model_path=model_path,
+                device=device,
+                epochs=100,
+                patience=5,
+                loss_mode=loss_mode
+            )
 
 
 if __name__ == "__main__":

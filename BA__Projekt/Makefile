@@ -1,4 +1,4 @@
-.PHONY: build-doc build-main build-test build-training clean create-files data-source-all init-all init-local init-docker
+.PHONY: build-doc build-develop build-main build-test build-training clean create-files data-source-all init-all init-local init-docker ruff
 
 clean:
 	bash scripts/clean__all.sh

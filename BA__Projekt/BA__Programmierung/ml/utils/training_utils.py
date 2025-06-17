@@ -1,39 +1,38 @@
 # BA__Programmierung/ml/utils/training_utils.py
-
 """
 training_utils.py
 
-Utility functions for training and evaluating PyTorch models with evidential regression loss.
+Utilities for training and evaluating PyTorch models with evidential regression loss.
 
-This module provides reusable functions for:
-- Training a single epoch
-- Evaluating a model on a validation set
-- Managing training with early stopping
-
-Author: [Your Name or Team]
+Functions:
+- train_one_epoch: Train for one epoch
+- evaluate: Evaluate on validation set
+- train_with_early_stopping: Train with early stopping
 """
 
 import os
+from BA__Programmierung.ml.metrics.metrics_registry import Metrics
 import torch
 
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 
 
-def train_one_epoch(model, dataloader, optimizer, device):
+def train_one_epoch(model, dataloader, optimizer, device, loss_mode="nll"):
     """
-    Train a model for one epoch using evidential loss.
+    Train the model for one epoch.
 
-    :param model: The PyTorch model to train.
-    :type model: torch.nn.Module
-    :param dataloader: DataLoader for training data.
-    :type dataloader: torch.utils.data.DataLoader
-    :param optimizer: Optimizer for updating model weights.
-    :type optimizer: torch.optim.Optimizer
-    :param device: Device to perform training on ('cpu' or 'cuda').
-    :type device: torch.device
+    Parameters
+    ----------
+    model : torch.nn.Module
+    dataloader : DataLoader
+    optimizer : Optimizer
+    device : torch.device
+    loss_mode : str, optional
 
-    :return: Average training loss for the epoch.
-    :rtype: float
+    Returns
+    -------
+    float
+        Average training loss.
     """
     model.train()
     total_loss = 0.0
@@ -43,27 +42,30 @@ def train_one_epoch(model, dataloader, optimizer, device):
 
         optimizer.zero_grad()
         mu, v, alpha, beta = model(inputs)
-        loss = evidential_loss(targets, mu, v, alpha, beta, mode="nll")
+        loss = evidential_loss(targets, mu, v, alpha, beta, mode=loss_mode)
         loss.backward()
         optimizer.step()
-
         total_loss += loss.item()
+
     return total_loss / len(dataloader)
 
 
-def evaluate(model, dataloader, device):
+def evaluate(model, dataloader, device, loss_mode="nll", metrics_token=None):
     """
-    Evaluate a model on a validation or test dataset.
+    Evaluate model performance and optionally accumulate registered metrics.
 
-    :param model: The PyTorch model to evaluate.
-    :type model: torch.nn.Module
-    :param dataloader: DataLoader for validation or test data.
-    :type dataloader: torch.utils.data.DataLoader
-    :param device: Device to perform evaluation on ('cpu' or 'cuda').
-    :type device: torch.device
+    Parameters
+    ----------
+    model : torch.nn.Module
+    dataloader : DataLoader
+    device : torch.device
+    loss_mode : str
+    metrics_token : str or None
 
-    :return: Average validation loss.
-    :rtype: float
+    Returns
+    -------
+    float
+        Average validation loss.
     """
     model.eval()
     total_loss = 0.0
@@ -71,54 +73,54 @@ def evaluate(model, dataloader, device):
         for inputs, targets in dataloader:
             inputs = inputs.to(device)
             targets = targets.float().unsqueeze(1).to(device)
+
             mu, v, alpha, beta = model(inputs)
-            loss = evidential_loss(targets, mu, v, alpha, beta, mode="nll")
+
+            # ----- Compute validation loss -----
+            loss = evidential_loss(targets, mu, v, alpha, beta, mode=loss_mode)
             total_loss += loss.item()
+
+            # ----- Optional: compute extra metrics -----
+            if metrics_token:
+                y_pred = mu  # or: torch.cat([mu, v, alpha, beta], dim=-1) depending on metrics
+                for metric in Metrics.get_metrics(metrics_token):
+                    metric(*y_pred, y_true=targets)
+
     return total_loss / len(dataloader)
 
 
-def train_with_early_stopping(
-    model,
-    train_loader,
-    val_loader,
-    optimizer,
-    model_path,
-    device,
-    epochs=50,
-    patience=5,
-):
+
+def train_with_early_stopping(model, train_loader, val_loader, optimizer, model_path,
+                              device, epochs=50, patience=5, loss_mode="nll", metrics_token=None):
     """
-    Train a model with early stopping based on validation loss.
+    Train with early stopping.
 
-    :param model: The PyTorch model to train.
-    :type model: torch.nn.Module
-    :param train_loader: DataLoader for training data.
-    :type train_loader: torch.utils.data.DataLoader
-    :param val_loader: DataLoader for validation data.
-    :type val_loader: torch.utils.data.DataLoader
-    :param optimizer: Optimizer for updating model weights.
-    :type optimizer: torch.optim.Optimizer
-    :param model_path: File path to save the best model.
-    :type model_path: str
-    :param device: Device to perform training on ('cpu' or 'cuda').
-    :type device: torch.device
-    :param epochs: Maximum number of epochs to train. Default is 50.
-    :type epochs: int, optional
-    :param patience: Number of epochs with no improvement after which training will be stopped. Default is 5.
-    :type patience: int, optional
-
-    :return: None
+    Parameters
+    ----------
+    model : torch.nn.Module
+    train_loader : DataLoader
+    val_loader : DataLoader
+    optimizer : Optimizer
+    model_path : str
+    device : torch.device
+    epochs : int, optional
+    patience : int, optional
+    loss_mode : str, optional
+    metrics_token : str, optional
     """
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
-
     best_val_loss = float("inf")
     epochs_no_improve = 0
 
     for epoch in range(epochs):
-        train_loss = train_one_epoch(model, train_loader, optimizer, device)
-        val_loss = evaluate(model, val_loader, device)
+        train_loss = train_one_epoch(model, train_loader, optimizer, device, loss_mode)
+        val_loss = evaluate(model, val_loader, device, loss_mode, metrics_token)
 
         print(f"Epoch {epoch+1}/{epochs} | Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
+
+        if metrics_token:
+            print(f"📊 Evaluation Metrics [{metrics_token}]:")
+            Metrics.report(metrics_token)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
