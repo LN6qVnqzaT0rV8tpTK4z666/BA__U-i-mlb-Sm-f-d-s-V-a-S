@@ -11,15 +11,18 @@ This script:
 Usage:
     python ednn_regression__concrete_compressive_strength_ensemble.py
 """
+
 import os
-from BA__Programmierung.ml.metrics.metrics_registry import Metrics
 import torch
-from torch.utils.data import DataLoader, random_split
+
+from models.model__generic import GenericRegressor
 
 from BA__Programmierung.ml.datasets.dataset__torch__concrete_compressive_strength import (
     DatasetTorchConcreteCompressiveStrength,
 )
+from BA__Programmierung.ml.metrics.metrics_registry import MetricsRegistry
 from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
+from torch.utils.data import DataLoader, random_split
 
 
 def main():
@@ -61,11 +64,12 @@ def main():
 
     # === Paths and losses ===
     model_save_base = "assets/models/pth/ednn_regression__concrete_compressive_strength"
-    metric_bundles = Metrics.get_metric_bundles()
-    loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
-
-    # Import GenericRegressor here so it's used in the loop
-    from models.model__generic import GenericRegressor
+    metric_bundles = MetricsRegistry.get_metric_bundles()
+    # loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    loss_modes = ["mse"]
+    
+    print("Available tokens: ")
+    print(metric_bundles)
 
     for loss_mode in loss_modes:
         model_save_dir = os.path.join(model_save_base, loss_mode)
@@ -80,6 +84,14 @@ def main():
             model_path = os.path.join(model_save_dir, f"model_{i}.pth")
             print(f"[{loss_mode.upper()}] Training model {i + 1}/{n_models}...")
 
+            # Decide which token to use for metrics
+            if loss_mode in ["nll", "full", "variational", "kl"]:
+                metrics_token = "uq"
+            elif loss_mode in ["mse", "abs"]:
+                metrics_token = "regression"
+            else:
+                metrics_token = None  # or "probabilistic" depending on your setup
+
             train_with_early_stopping(
                 model=model,
                 train_loader=train_loader,
@@ -90,6 +102,7 @@ def main():
                 epochs=100,
                 patience=10,
                 loss_mode=loss_mode,
+                metrics_token=metrics_token
             )
 
 

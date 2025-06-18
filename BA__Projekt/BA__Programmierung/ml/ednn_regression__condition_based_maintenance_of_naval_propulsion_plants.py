@@ -12,7 +12,7 @@ This script:
 import os
 import torch
 
-from BA__Programmierung.ml.metrics.metrics_registry import Metrics
+from BA__Programmierung.ml.metrics.metrics_registry import MetricsRegistry
 from BA__Programmierung.ml.datasets.dataset__torch__condition_based_maintenance_of_naval_propulsion_plants import NavalPropulsionDataset
 from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
 from models.model__generic_ensemble import GenericEnsembleRegressor
@@ -63,8 +63,12 @@ def main():
     # Training params
     n_models = ensemble_size
     seed = 42
-    metric_bundles = Metrics.get_metric_bundles()
-    loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    metric_bundles = MetricsRegistry.get_metric_bundles()
+    # loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    loss_modes = ["mse"]
+    
+    print("Available tokens: ")
+    print(metric_bundles)
 
     for loss_mode in loss_modes:
         model_save_dir = os.path.join(model_save_base, loss_mode)
@@ -79,6 +83,14 @@ def main():
             model_path = os.path.join(model_save_dir, f"model_{i}.pth")
             print(f"[{loss_mode.upper()}] Training model {i + 1}/{n_models}...")
 
+            # Decide which token to use for metrics
+            if loss_mode in ["nll", "full", "variational", "kl"]:
+                metrics_token = "uq"
+            elif loss_mode in ["mse", "abs"]:
+                metrics_token = "regression"
+            else:
+                metrics_token = None  # or "probabilistic" depending on your setup
+
             train_with_early_stopping(
                 model=model,
                 train_loader=train_loader,
@@ -88,7 +100,8 @@ def main():
                 device=device,
                 epochs=100,
                 patience=10,
-                loss_mode=loss_mode
+                loss_mode=loss_mode,
+                metrics_token=metrics_token,
             )
 
 

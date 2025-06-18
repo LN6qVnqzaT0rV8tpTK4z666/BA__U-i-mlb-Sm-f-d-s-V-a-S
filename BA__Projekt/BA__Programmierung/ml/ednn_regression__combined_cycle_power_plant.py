@@ -1,11 +1,12 @@
 # BA__Projekt/BA__Programmierung/ml/ednn_regression__combined-cycle-power-plant.py
 import os
-from BA__Programmierung.ml.metrics.metrics_registry import Metrics
 import torch
-from torch.utils.data import DataLoader, random_split
 
 from BA__Programmierung.ml.datasets.dataset__torch__combined_cycle_power_plant import DatasetTorchCombinedCyclePowerPlant
+from BA__Programmierung.ml.metrics.metrics_registry import MetricsRegistry
 from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
+from torch.utils.data import DataLoader, random_split
+from models.model__generic import GenericRegressor
 
 
 def main():
@@ -43,8 +44,12 @@ def main():
     # Ensemble configuration
     n_models = 5
     seed = 42
-    metric_bundles = Metrics.get_metric_bundles()
-    loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    metric_bundles = MetricsRegistry.get_metric_bundles()
+    # loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    loss_modes = ["mse"]
+
+    print("Available tokens: ")
+    print(metric_bundles)
 
     # Save base path
     model_save_base = "assets/models/pth/ednn_regression__combined_cycle_power_plant"
@@ -57,12 +62,19 @@ def main():
         for i in range(n_models):
             torch.manual_seed(seed + i)
 
-            from models.model__generic import GenericRegressor
             model = GenericRegressor(**base_config).to(device)
             optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
             model_path = os.path.join(model_save_dir, f"model_{i}.pth")
             print(f"[{loss_mode.upper()}] Training model {i + 1}/{n_models}...")
+
+            # Decide which token to use for metrics
+            if loss_mode in ["nll", "full", "variational", "kl"]:
+                metrics_token = "uq"
+            elif loss_mode in ["mse", "abs"]:
+                metrics_token = "regression"
+            else:
+                metrics_token = None  # or "probabilistic" depending on your setup
 
             train_with_early_stopping(
                 model=model,
@@ -73,7 +85,8 @@ def main():
                 device=device,
                 epochs=100,
                 patience=10,
-                loss_mode=loss_mode
+                loss_mode=loss_mode,
+                metrics_token=metrics_token
             )
 
 

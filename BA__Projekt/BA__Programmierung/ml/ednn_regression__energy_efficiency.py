@@ -3,8 +3,8 @@
 import os
 import torch
 
-from BA__Programmierung.ml.metrics.metrics_registry import Metrics
 from BA__Programmierung.ml.datasets.dataset__torch__energy_efficiency import EnergyEfficiencyDataset
+from BA__Programmierung.ml.metrics.metrics_registry import MetricsRegistry
 from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
 from models.model__generic_ensemble import GenericEnsembleRegressor
 from torch.utils.data import DataLoader, random_split
@@ -40,10 +40,14 @@ def main():
 
     n_models = 5
     seed = 42
-    metric_bundles = Metrics.get_metric_bundles()
-    loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
-
+    metric_bundles = MetricsRegistry.get_metric_bundles()
+    # loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    loss_modes = ["mse"]
+    
     model_save_base = "assets/models/pth/ednn_regression__energy_efficiency_ensemble"
+
+    print("Available tokens: ")
+    print(metric_bundles)
 
     for loss_mode in loss_modes:
         model_save_dir = os.path.join(model_save_base, loss_mode)
@@ -58,6 +62,14 @@ def main():
             model_path = os.path.join(model_save_dir, f"model_{i}.pth")
             print(f"[{loss_mode.upper()}] Training model {i + 1}/{n_models}...")
 
+            # Decide which token to use for metrics
+            if loss_mode in ["nll", "full", "variational", "kl"]:
+                metrics_token = "uq"
+            elif loss_mode in ["mse", "abs"]:
+                metrics_token = "regression"
+            else:
+                metrics_token = None  # or "probabilistic" depending on your setup
+
             train_with_early_stopping(
                 model=model,
                 train_loader=train_loader,
@@ -68,6 +80,7 @@ def main():
                 epochs=100,
                 patience=10,
                 loss_mode=loss_mode,
+                metrics_token=metrics_token,
             )
 
 

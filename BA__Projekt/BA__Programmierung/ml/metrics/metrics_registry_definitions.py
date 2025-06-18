@@ -62,9 +62,10 @@ def top_k_accuracy(y_pred, y_true, k=3) -> float:
     correct = sum(y_true[i] in topk[i] for i in range(len(y_true)))
     return correct / len(y_true)
 
-def mse(y_true: torch.Tensor, y_pred: torch.Tensor) -> torch.Tensor:
+
+def mse(y_true: torch.Tensor, y_pred: torch.Tensor) -> float:
     """Mean Squared Error."""
-    return tmf.mean_squared_error(y_pred, y_true)
+    return float(tmf.mean_squared_error(y_pred, y_true))
 
 
 def rmse(y_pred, y_true):

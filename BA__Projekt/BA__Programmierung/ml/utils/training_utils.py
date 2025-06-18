@@ -21,7 +21,7 @@ train_with_early_stopping(model, train_loader, val_loader, optimizer, model_path
 import os
 import torch
 
-from BA__Programmierung.ml.metrics.metrics_registry import MetricsRegistry
+from BA__Programmierung.ml.metrics.metrics_registry import MetricsRegistry, metrics_registry
 from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 
 
@@ -165,7 +165,6 @@ def evaluate(model, data_loader, device, loss_mode="nll", metrics_token=None):
             all_outputs["alpha"].append(alpha)
             all_outputs["beta"].append(beta)
 
-
             # KL-Divergenz: KL(N(mu, std^2) || N(0,1))
             ref_mean = torch.zeros_like(mu)
             ref_std = torch.ones_like(std)
@@ -249,9 +248,26 @@ def evaluate(model, data_loader, device, loss_mode="nll", metrics_token=None):
     if "n_bins" not in merged_outputs:
         merged_outputs["n_bins"] = torch.tensor(10)
 
+    metrics_registry = MetricsRegistry()
+
+    # Fix: inject 'eps' only if mape is expected to be computed
+    if "mape" in metrics_registry.list("regression")["regression"]:
+        y_pred = merged_outputs.get("y_pred_mean", merged_outputs.get("y_pred"))
+        merged_outputs["eps"] = torch.full_like(y_pred, 1e-8)
+
+    merged_outputs["y_pred"] = merged_outputs.get("y_pred_mean")
+
+    # # Normalize shape of y_pred and y_true
+    # if "y_pred" in merged_outputs and merged_outputs["y_pred"].ndim == 2:
+    #     if merged_outputs["y_pred"].shape[1] == 1:
+    #         merged_outputs["y_pred"] = merged_outputs["y_pred"].squeeze(1)
+
+    # if "y_true" in merged_outputs and merged_outputs["y_true"].ndim == 2:
+    #     if merged_outputs["y_true"].shape[1] == 1:
+    #         merged_outputs["y_true"] = merged_outputs["y_true"].squeeze(1)
+
     # Run metrics
     if metrics_token:
-        metrics_registry = MetricsRegistry()
         metrics = metrics_registry.get_metrics(metrics_token)
 
         for metric in metrics:
@@ -284,6 +300,12 @@ def evaluate(model, data_loader, device, loss_mode="nll", metrics_token=None):
                     all_outputs[key] = torch.stack(value, dim=0)
             except Exception as e:
                 print(f"⚠️ Fehler beim Zusammenführen von '{key}': {e}")
+
+    # Ensure required regression inputs exist
+    if "y_pred" not in merged_outputs and "y_pred_mean" in merged_outputs:
+        merged_outputs["y_pred"] = merged_outputs["y_pred_mean"]
+    if "y_true" not in merged_outputs and "target" in merged_outputs:
+        merged_outputs["y_true"] = merged_outputs["target"]
 
     metrics_registry.add_batch(metrics_token, **merged_outputs)
 
@@ -334,7 +356,6 @@ def train_with_early_stopping(model, train_loader, val_loader, optimizer, model_
 
         if metrics_token:
             print(f"📊 Evaluation Metrics [{metrics_token}]:")
-            metrics_registry = MetricsRegistry()
             metrics_registry.report(metrics_token)
 
         if val_loss < best_val_loss:

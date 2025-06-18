@@ -254,7 +254,7 @@ metrics_registry.register(token="classification", fn=accuracy, accumulate=True, 
 metrics_registry.register(token="classification", fn=lambda y_pred, y_true: top_k_accuracy(y_pred, y_true, k=3), accumulate=True, arg_names=["y_pred", "y_true"], name="top_k_accuracy")
 
 # ───── Regression ─────
-metrics_registry.register(token="regression", fn=mse, accumulate=True, arg_names=["y_true", "y_pred"], name="mse")
+metrics_registry.register(token="regression", fn=mse, accumulate=True, arg_names=["y_pred", "y_true"], name="mse")
 metrics_registry.register(token="regression", fn=rmse, accumulate=True, arg_names=["y_pred", "y_true"], name="rmse")
 metrics_registry.register(token="regression", fn=mae, accumulate=True, arg_names=["y_pred", "y_true"], name="mae")
 metrics_registry.register(token="regression", fn=mape, accumulate=True, arg_names=["y_pred", "y_true", "eps"], name="mape")

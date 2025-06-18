@@ -47,7 +47,8 @@ def main():
     n_models = 5
     seed = 42
     metric_bundles = MetricsRegistry.get_metric_bundles()
-    loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    # loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    loss_modes = ["mse"]
 
     # Base path for saving models
     model_save_base = "assets/models/pth/ednn_regression__boston_housing"
