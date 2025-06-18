@@ -1,5 +1,6 @@
 # BA__Projekt/BA__Programmierung/ml/ednn_regression__combined-cycle-power-plant.py
 import os
+from BA__Programmierung.ml.metrics.metrics_registry import Metrics
 import torch
 from torch.utils.data import DataLoader, random_split
 
@@ -42,7 +43,7 @@ def main():
     # Ensemble configuration
     n_models = 5
     seed = 42
-    # metric_bundles = Metrics.get_metric_bundles()
+    metric_bundles = Metrics.get_metric_bundles()
     loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
 
     # Save base path

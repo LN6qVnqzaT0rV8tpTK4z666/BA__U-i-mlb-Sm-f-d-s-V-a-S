@@ -12,6 +12,7 @@ Usage:
     python ednn_regression__concrete_compressive_strength_ensemble.py
 """
 import os
+from BA__Programmierung.ml.metrics.metrics_registry import Metrics
 import torch
 from torch.utils.data import DataLoader, random_split
 
@@ -60,7 +61,7 @@ def main():
 
     # === Paths and losses ===
     model_save_base = "assets/models/pth/ednn_regression__concrete_compressive_strength"
-    # metric_bundles = Metrics.get_metric_bundles()
+    metric_bundles = Metrics.get_metric_bundles()
     loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
 
     # Import GenericRegressor here so it's used in the loop

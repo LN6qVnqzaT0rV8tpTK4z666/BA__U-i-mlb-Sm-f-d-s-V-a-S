@@ -1,9 +1,20 @@
 #!/bin/bash
 # BA__Projekt/scripts/create__files_by_token.sh
 
-# Check args
+# Check for --quiet / --q flag
+QUIET=false
+for arg in "$@"; do
+    if [[ "$arg" == "--quiet" || "$arg" == "--q" ]]; then
+        QUIET=true
+        # Remove the quiet flag from the positional arguments
+        set -- "${@/--quiet/}"
+        set -- "${@/--q/}"
+    fi
+done
+
+# Check args after removing quiet flag
 if [ $# -ne 3 ]; then
-    echo "Usage: $0 <prefix> <extension> <target_folder>"
+    echo "Usage: $0 <prefix> <extension> <target_folder> [--quiet|--q]"
     exit 1
 fi
 
@@ -11,43 +22,38 @@ new_prefix="$1"
 file_ext="$2"
 target_folder="$3"
 
-# Prepare target directory
 mkdir -p "$target_folder"
 
-# Initialize token array
 tokens=()
 
-# Read input from piped tree output
+# Read piped input and extract tokens
 while IFS= read -r line; do
-    # Match depth=1 lines with files
     if [[ "$line" =~ ^[[:space:]]*[├└]──[[:space:]]*([a-zA-Z0-9_.-]+)$ ]]; then
         file="${BASH_REMATCH[1]}"
-
-        # Skip __init__.py
         [[ "$file" == "__init__.py" ]] && continue
 
-        # Remove file extension
         base="${file%.*}"
-
-        # Extract everything after the last '__'
         if [[ "$base" =~ .*__([^_][^_]*)$ ]]; then
             token="${BASH_REMATCH[1]}"
             tokens+=("$token")
         else
-            echo "[Warning] Skipping file (no token found): $file"
+            if [ "$QUIET" = false ]; then
+                echo "[Warning] Skipping file (no token found): $file"
+            fi
         fi
     fi
 done
 
-# Check we found tokens
 if [ "${#tokens[@]}" -eq 0 ]; then
     echo "[Error] No valid tokens extracted."
     exit 1
 fi
 
-# Create files using prefix + token
+# Create files
 for token in "${tokens[@]}"; do
     new_file="${target_folder}/${new_prefix}__${token}.${file_ext}"
     touch "$new_file"
-    echo "Created: $new_file"
+    if [ "$QUIET" = false ]; then
+        echo "Created: $new_file"
+    fi
 done

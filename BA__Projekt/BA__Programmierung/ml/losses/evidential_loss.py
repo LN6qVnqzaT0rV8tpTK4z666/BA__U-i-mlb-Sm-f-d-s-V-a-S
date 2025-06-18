@@ -43,67 +43,84 @@ def evidential_loss(
     torch.Tensor
         Scalar loss (mean over batch).
     """
+    """
+    Generalized Evidential Regression Loss with NaN protection and stability checks.
+    """
+    # ─── Sanitize Inputs ─── #
+    v = v.clamp(min=1e-6)
+    alpha = alpha.clamp(min=1.01)
+    beta = beta.clamp(min=1e-6)
 
-    two_blambda = 2 * beta * (1 + v)
-    nll = (
-        0.5 * torch.log(torch.pi / v)
-        - alpha * torch.log(two_blambda)
-        + (alpha + 0.5) * torch.log((y - mu) ** 2 * v + two_blambda)
-        + torch.lgamma(alpha)
-        - torch.lgamma(alpha + 0.5)
-    )
+    if any(t.isnan().any() for t in (mu, v, alpha, beta)):
+        print("❌ NaNs in inputs to evidential_loss")
+        print(f"  mu:     {mu.mean().item():.4f},  v: {v.min().item():.2e} → {v.max().item():.2e}")
+        print(f"  alpha:  {alpha.min().item():.2f} → {alpha.max().item():.2f}")
+        print(f"  beta:   {beta.min().item():.2e} → {beta.max().item():.2e}")
+        return torch.tensor(float("nan"), device=mu.device)
 
-    if mode == "nll":
-        return nll.mean()
-
-    elif mode == "abs":
-        error = torch.abs(y - mu)
-        penalty = 2 * torch.log1p(v) if use_logv else 2 * v
-        reg = error * (penalty + alpha)
-        return (nll + lambda_reg * reg).mean()
-
-    elif mode == "mse":
-        error = (y - mu) ** 2
-        penalty = 2 * torch.log1p(v) if use_logv else 2 * v
-        reg = error * (penalty + alpha)
-        return (nll + lambda_reg * reg).mean()
-
-    elif mode == "kl":
-        kl = (
-            alpha * torch.log(beta)
-            - (alpha - 0.5) * torch.digamma(alpha)
+    try:
+        two_blambda = 2 * beta * (1 + v)
+        nll = (
+            0.5 * torch.log(torch.pi / v)
+            - alpha * torch.log(two_blambda)
+            + (alpha + 0.5) * torch.log((y - mu) ** 2 * v + two_blambda)
             + torch.lgamma(alpha)
-            - 0.5 * torch.log(v)
-            - alpha
+            - torch.lgamma(alpha + 0.5)
         )
-        return (nll + kl_coef * kl).mean()
 
-    elif mode == "scaled":
-        reg = torch.abs(y - mu) / (alpha + 1e-6)
-        return (nll + lambda_reg * reg).mean()
+        if mode == "nll":
+            return nll.mean()
 
-    elif mode == "variational":
-        precision = alpha / (beta + 1e-6)
-        error = (y - mu) ** 2
-        return 0.5 * (torch.log(1.0 / precision) + precision * error).mean()
+        elif mode == "abs":
+            error = torch.abs(y - mu)
+            penalty = 2 * torch.log1p(v) if use_logv else 2 * v
+            reg = error * (penalty + alpha)
+            return (nll + lambda_reg * reg).mean()
 
-    elif mode == "full":
-        # NLL
-        error = torch.abs(y - mu)
-        penalty = 2 * torch.log1p(v) if use_logv else 2 * v
-        reg = error * (penalty + alpha)
-        # KL
-        kl = (
-            alpha * torch.log(beta)
-            - (alpha - 0.5) * torch.digamma(alpha)
-            + torch.lgamma(alpha)
-            - 0.5 * torch.log(v)
-            - alpha
-        )
-        return (nll + lambda_reg * reg + kl_coef * kl).mean()
+        elif mode == "mse":
+            error = (y - mu) ** 2
+            penalty = 2 * torch.log1p(v) if use_logv else 2 * v
+            reg = error * (penalty + alpha)
+            return (nll + lambda_reg * reg).mean()
 
-    else:
-        raise ValueError(f"Unknown loss mode: '{mode}'")
+        elif mode == "kl":
+            kl = (
+                alpha * torch.log(beta)
+                - (alpha - 0.5) * torch.digamma(alpha)
+                + torch.lgamma(alpha)
+                - 0.5 * torch.log(v)
+                - alpha
+            )
+            return (nll + kl_coef * kl).mean()
+
+        elif mode == "scaled":
+            reg = torch.abs(y - mu) / (alpha + 1e-6)
+            return (nll + lambda_reg * reg).mean()
+
+        elif mode == "variational":
+            precision = alpha / (beta + 1e-6)
+            error = (y - mu) ** 2
+            return 0.5 * (torch.log(1.0 / precision) + precision * error).mean()
+
+        elif mode == "full":
+            error = torch.abs(y - mu)
+            penalty = 2 * torch.log1p(v) if use_logv else 2 * v
+            reg = error * (penalty + alpha)
+            kl = (
+                alpha * torch.log(beta)
+                - (alpha - 0.5) * torch.digamma(alpha)
+                + torch.lgamma(alpha)
+                - 0.5 * torch.log(v)
+                - alpha
+            )
+            return (nll + lambda_reg * reg + kl_coef * kl).mean()
+
+        else:
+            raise ValueError(f"Unknown loss mode: '{mode}'")
+
+    except Exception as e:
+        print(f"Exception during evidential_loss({mode}): {e}")
+        return torch.tensor(float("nan"), device=mu.device)
 
 
 if __name__ == "__main__":

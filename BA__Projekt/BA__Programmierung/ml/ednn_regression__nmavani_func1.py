@@ -9,20 +9,15 @@ This script performs the following steps:
 - Creates DataLoaders for batching.
 - Configures and initializes a GenericEnsembleRegressor model.
 - Trains the model with early stopping, saving the best model checkpoint.
-
-Usage:
-    Run this script directly to start training.
-
-Example:
-    $ python ednn_regression__nmavani_func1.py
 """
 import os
 import torch
-from torch.utils.data import DataLoader, random_split
 
 from BA__Programmierung.ml.datasets.dataset__torch__nmavani_func1 import DatasetTorchDuckDBFunc1
-from models.model__generic_ensemble import GenericEnsembleRegressor
+from BA__Programmierung.ml.metrics.metrics_registry import Metrics
 from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
+from models.model__generic_ensemble import GenericEnsembleRegressor
+from torch.utils.data import DataLoader, random_split
 
 
 def main():
@@ -59,7 +54,7 @@ def main():
     # === Training configuration ===
     n_models = 5
     seed = 42
-    # metric_bundles = Metrics.get_metric_bundles()
+    metric_bundles = Metrics.get_metric_bundles()
     loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
     model_save_base = "assets/models/pth/ednn_regression__nmavani_func1"
 

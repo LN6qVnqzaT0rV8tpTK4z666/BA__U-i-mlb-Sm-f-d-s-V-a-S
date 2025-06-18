@@ -9,6 +9,7 @@ Submodules
 
    BA__Programmierung.ml.metrics.metrics
    BA__Programmierung.ml.metrics.metrics_registry
+   BA__Programmierung.ml.metrics.metrics_registry_definitions
 
 Module contents
 ---------------

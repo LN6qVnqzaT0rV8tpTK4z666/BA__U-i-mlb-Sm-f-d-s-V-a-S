@@ -22,9 +22,13 @@ from BA__Programmierung.db.persist import db__persist
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 
+# Suppress properscoring/_brier.py:95: SyntaxWarning: invalid escape sequence '\i' equivalents
+import warnings
+warnings.filterwarnings("ignore", category=SyntaxWarning)
+
 # Dataset tokens to skip during training and visualization
 SKIP_TOKENS = {
-    "boston_housing",
+    # "boston_housing",
     "combined_cycle_power_plant",
     "concrete_compressive_strength",
     "condition_based_maintenance_of_naval_propulsion_plants",

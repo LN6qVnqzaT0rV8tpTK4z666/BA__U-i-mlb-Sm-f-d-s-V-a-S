@@ -11,11 +11,12 @@ This script:
 
 import os
 import torch
-from torch.utils.data import DataLoader, random_split
 
+from BA__Programmierung.ml.metrics.metrics_registry import Metrics
 from BA__Programmierung.ml.datasets.dataset__torch__condition_based_maintenance_of_naval_propulsion_plants import NavalPropulsionDataset
 from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
 from models.model__generic_ensemble import GenericEnsembleRegressor
+from torch.utils.data import DataLoader, random_split
 
 
 def main():
@@ -62,7 +63,7 @@ def main():
     # Training params
     n_models = ensemble_size
     seed = 42
-    # metric_bundles = Metrics.get_metric_bundles()
+    metric_bundles = Metrics.get_metric_bundles()
     loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
 
     for loss_mode in loss_modes:

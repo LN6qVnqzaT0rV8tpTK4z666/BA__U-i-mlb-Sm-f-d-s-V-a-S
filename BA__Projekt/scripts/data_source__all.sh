@@ -2,13 +2,25 @@
 set -e
 # BA__Projekt/scripts/data-source__extract_all.sh
 
-# Navigate to the project root (one level up from script location)
-cd "$(dirname "$0")" || exit 1  # ins Skriptverzeichnis wechseln
-echo "Current directory: $(pwd)"
-echo "Found files:"
-ls data_source__*.sh
+# Detect --quiet / --q flag
+QUIET=false
+for arg in "$@"; do
+    if [[ "$arg" == "--quiet" || "$arg" == "--q" ]]; then
+        QUIET=true
+        break
+    fi
+done
 
-# Reihenfolge der auszuführenden Skripte definieren
+# Navigate to the project root (one level up from script location)
+cd "$(dirname "$0")" || exit 1
+
+if [ "$QUIET" = false ]; then
+    echo "Current directory: $(pwd)"
+    echo "Found files:"
+    ls data_source__*.sh
+fi
+
+# Define script execution order
 ordered_scripts=(
   "data-source__rename.sh"
   "data-source__extract-archives.sh"
@@ -19,11 +31,10 @@ ordered_scripts=(
 )
 
 for script in "${ordered_scripts[@]}"; do
-  # Prüfen, ob die Datei existiert und nicht data_source__all.sh ist
   if [ -f "$script" ] && [ "$script" != "data_source__all.sh" ]; then
-    echo "Running $script"
-    bash "$script"
+    [ "$QUIET" = false ] && echo "Running $script"
+    bash "$script" "$@"  # Forward flags to inner scripts
   else
-    echo "Skipping $script (not found or excluded)"
+    [ "$QUIET" = false ] && echo "Skipping $script (not found or excluded)"
   fi
 done

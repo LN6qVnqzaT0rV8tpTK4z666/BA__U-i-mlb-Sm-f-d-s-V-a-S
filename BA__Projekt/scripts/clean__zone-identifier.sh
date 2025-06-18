@@ -4,9 +4,22 @@
 # Navigate to the project root
 cd "$(dirname "$0")/.."
 
-echo "Cleaning all files ending with 'Zone.Identifier'..."
+# Parse quiet flag
+QUIET=false
+for arg in "$@"; do
+    if [[ "$arg" == "--quiet" || "$arg" == "--q" ]]; then
+        QUIET=true
+        break
+    fi
+done
+
+if [ "$QUIET" = false ]; then
+    echo "Cleaning all files ending with 'Zone.Identifier'..."
+fi
 
 # Find and delete all matching files
 find . -type f -name '*Zone.Identifier' -print -delete
 
-echo "Cleanup complete."
+if [ "$QUIET" = false ]; then
+    echo "Cleanup complete."
+fi

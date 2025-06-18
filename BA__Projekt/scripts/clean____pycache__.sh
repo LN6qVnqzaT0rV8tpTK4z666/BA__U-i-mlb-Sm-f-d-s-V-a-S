@@ -3,9 +3,23 @@
 
 # Navigate to the project root (directory of the script's parent)
 cd "$(dirname "$0")/.." || exit 1
-echo "Cleaning folder ending with '__pycache__'."
+
+# Check for --quiet or --q flag
+QUIET=false
+for arg in "$@"; do
+    if [[ "$arg" == "--quiet" || "$arg" == "--q" ]]; then
+        QUIET=true
+        break
+    fi
+done
+
+if [ "$QUIET" = false ]; then
+    echo "Cleaning folders ending with '__pycache__'."
+fi
 
 # Find and remove all __pycache__ folders in the project
 find . -type d -name "__pycache__" -exec rm -rf {} +
 
-echo "Cleanup complete."
+if [ "$QUIET" = false ]; then
+    echo "Cleanup complete."
+fi

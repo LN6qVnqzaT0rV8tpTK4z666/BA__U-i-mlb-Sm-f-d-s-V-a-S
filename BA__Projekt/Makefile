@@ -1,7 +1,7 @@
 .PHONY: build-doc build-develop build-main build-test build-training clean create-files data-source-all init-all init-local init-docker ruff
 
 clean:
-	bash scripts/clean__all.sh
+	bash scripts/clean__all.sh --quiet
 
 build-doc:
 	bash ./scripts/create__doc.sh

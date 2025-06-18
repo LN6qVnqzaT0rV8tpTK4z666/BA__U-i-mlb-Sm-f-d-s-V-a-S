@@ -1,12 +1,15 @@
 # BA__Projekt/BA__Programmierung/util/singleton.py
 
 
-class Singleton:
+class Singleton(type):
+    """
+    A metaclass implementing the Singleton pattern.
+
+    Ensures only one instance of any class using this metaclass exists.
+    """
     _instances = {}
 
-    def __new__(cls, *args, **kwargs):
-        """Ensure only one instance per class."""
+    def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            instance = super().__new__(cls)
-            cls._instances[cls] = instance
+            cls._instances[cls] = super().__call__(*args, **kwargs)
         return cls._instances[cls]
