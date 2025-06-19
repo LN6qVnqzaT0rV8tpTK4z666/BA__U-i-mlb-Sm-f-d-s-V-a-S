@@ -5,15 +5,33 @@ import torch
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+
+from BA__Programmierung.ml.datasets.dataset__torch__energy_efficiency import EnergyEfficiencyDataset
+from models.model__generic_ensemble import GenericEnsembleRegressor
 from sklearn.metrics import r2_score, mean_absolute_percentage_error
 from sklearn.preprocessing import StandardScaler
 from torch.utils.data import random_split, DataLoader
 
-from BA__Programmierung.ml.datasets.dataset__torch__energy_efficiency import EnergyEfficiencyDataset
-from models.model__generic_ensemble import GenericEnsembleRegressor
-
 
 def evaluate_and_visualize_and_save(model, dataloader, scaler_y, device, save_dir):
+    """
+    Evaluates the given model and visualizes the results by generating and saving plots.
+    
+    This function performs the following:
+    1. Evaluates the model on the provided dataloader.
+    2. Calculates R² and Mean Absolute Percentage Error (MAPE).
+    3. Creates three types of plots:
+        - True vs Predicted values scatter plot
+        - Residual distribution (prediction error)
+        - Residuals vs True values scatter plot
+    4. Saves all the generated plots in the specified directory.
+
+    :param model: The model to be evaluated.
+    :param dataloader: DataLoader providing the test dataset.
+    :param scaler_y: StandardScaler instance used for scaling the target variable.
+    :param device: The device to perform the evaluation on (e.g., 'cuda' or 'cpu').
+    :param save_dir: Directory where the plots will be saved.
+    """
     os.makedirs(save_dir, exist_ok=True)
     model.eval()
     all_preds = []
@@ -80,9 +98,19 @@ def evaluate_and_visualize_and_save(model, dataloader, scaler_y, device, save_di
 
 
 def main():
+    """
+    Main function to load the Energy Efficiency dataset, train a regression model,
+    and evaluate it using the `evaluate_and_visualize_and_save` function.
+
+    This function performs the following steps:
+    1. Loads the Energy Efficiency dataset.
+    2. Scales the features and targets.
+    3. Evaluates the model on the test data and generates plots.
+    """
     dataset_path = "assets/data/raw/dataset__energy-efficiency/dataset__energy-efficiency.csv"
     full_dataset = EnergyEfficiencyDataset(dataset_path)
 
+    # Train-Test Split
     train_size = int(0.8 * len(full_dataset))
     test_size = len(full_dataset) - train_size
     train_dataset, test_dataset = random_split(
@@ -92,10 +120,17 @@ def main():
     )
 
     def extract_xy(dataset):
+        """
+        Extracts input features (X) and target variables (Y) from a dataset.
+
+        :param dataset: A torch dataset containing (input, target) pairs.
+        :return: A tuple of numpy arrays (X, Y).
+        """
         X = torch.stack([item[0] for item in dataset])
         Y = torch.stack([item[1] for item in dataset])
         return X.numpy(), Y.numpy()
 
+    # Extract and scale data
     X_train, Y_train = extract_xy(train_dataset)
     X_test, Y_test = extract_xy(test_dataset)
 
@@ -110,6 +145,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     input_dim = X_test_scaled.shape[1]
 
+    # Model Configuration
     base_config = {
         "input_dim": input_dim,
         "hidden_dims": [64, 64],
@@ -121,11 +157,12 @@ def main():
         "activation_name": "relu",
     }
 
+    # Load model
     model = GenericEnsembleRegressor(base_config=base_config, n_models=5).to(device)
     model.load_state_dict(torch.load("/root/BA__Projekt/assets/models/pth/ednn_regression__energy_efficiency_ensemble.pth", map_location=device))
 
+    # Evaluate and visualize
     evaluate_and_visualize_and_save(model, test_loader, scaler_y, device, "assets/viz/ednn_regression__energy_efficiency_ensemble/")
-
 
 if __name__ == "__main__":
     main()

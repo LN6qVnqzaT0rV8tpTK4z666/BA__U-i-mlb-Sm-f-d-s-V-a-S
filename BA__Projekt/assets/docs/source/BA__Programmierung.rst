@@ -7,9 +7,11 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   BA__Programmierung.conv
    BA__Programmierung.db
    BA__Programmierung.gen
    BA__Programmierung.ml
+   BA__Programmierung.util
    BA__Programmierung.viz
 
 Submodules

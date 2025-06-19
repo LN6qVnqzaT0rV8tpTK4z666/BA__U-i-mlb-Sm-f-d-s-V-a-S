@@ -1,5 +1,5 @@
 .. BA__U-i-mlb-Sm-f-d-s-V-a-S documentation master file, created by
-   sphinx-quickstart on Thu Jun 19 11:29:30 2025.
+   sphinx-quickstart on Thu Jun 19 17:16:06 2025.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 

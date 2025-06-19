@@ -11,6 +11,28 @@ from torch.utils.data import DataLoader, random_split
 
 
 def main():
+    """
+    Main function for training an ensemble model on the energy efficiency dataset.
+
+    This script performs the following steps:
+    1. Loads the Energy Efficiency dataset.
+    2. Splits the dataset into training and validation sets (80/20).
+    3. Defines and configures the ensemble model.
+    4. Trains the model using the `train_with_early_stopping` function.
+    5. Saves the trained models.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    None
+
+    Example
+    -------
+    >>> main()  # Run the main function for training and evaluating the model
+    """
     dataset_path = "assets/data/raw/dataset__energy-efficiency/dataset__energy-efficiency.csv"
     dataset = EnergyEfficiencyDataset(dataset_path)
 
@@ -41,14 +63,16 @@ def main():
     n_models = 5
     seed = 42
     metric_bundles = MetricsRegistry.get_metric_bundles()
-    # loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+
+    # loss_modes determine the type of loss function to use for training
     loss_modes = ["mse"]
-    
+
     model_save_base = "assets/models/pth/ednn_regression__energy_efficiency_ensemble"
 
     print("Available tokens: ")
     print(metric_bundles)
 
+    # Training loop for multiple models
     for loss_mode in loss_modes:
         model_save_dir = os.path.join(model_save_base, loss_mode)
         os.makedirs(model_save_dir, exist_ok=True)
@@ -56,6 +80,7 @@ def main():
         for i in range(n_models):
             torch.manual_seed(seed + i)
 
+            # Initialize and train the ensemble model
             model = GenericEnsembleRegressor(base_config=base_config, n_models=n_models).to(device)
             optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
@@ -70,6 +95,7 @@ def main():
             else:
                 metrics_token = None  # or "probabilistic" depending on your setup
 
+            # Train model with early stopping
             train_with_early_stopping(
                 model=model,
                 train_loader=train_loader,
@@ -86,4 +112,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

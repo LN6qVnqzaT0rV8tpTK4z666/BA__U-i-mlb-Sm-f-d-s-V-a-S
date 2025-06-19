@@ -8,6 +8,7 @@ Submodules
    :maxdepth: 4
 
    BA__Programmierung.ml.utils.training_utils
+   BA__Programmierung.ml.utils.training_utils_refactor
 
 Module contents
 ---------------

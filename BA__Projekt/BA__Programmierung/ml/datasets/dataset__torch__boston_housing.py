@@ -6,13 +6,12 @@ from BA__Programmierung.ml.datasets.dataset__torch__base_tabular import (
     BaseTabularDataset,
 )
 
-
 class DatasetTorchBostonHousing(BaseTabularDataset):
     """
     PyTorch dataset class for the Boston Housing dataset.
 
     This dataset loads data from a whitespace-delimited CSV file without headers,
-    assigns appropriate column names, and uses the BaseTabularDataset class
+    assigns appropriate column names, and uses the `BaseTabularDataset` class
     for tabular data handling with normalization enabled.
 
     Parameters
@@ -37,12 +36,16 @@ class DatasetTorchBostonHousing(BaseTabularDataset):
         Initialize the Boston Housing dataset.
 
         Loads the CSV file with predefined column names, splits features and target,
-        and initializes the BaseTabularDataset with normalization.
+        and initializes the `BaseTabularDataset` with normalization enabled.
 
         Parameters
         ----------
         csv_path : str
             Path to the Boston Housing dataset CSV file.
+        
+        Example
+        -------
+        >>> dataset = DatasetTorchBostonHousing(csv_path="data/boston_housing.csv")
         """
         column_names = [
             "CRIM",
@@ -69,4 +72,3 @@ class DatasetTorchBostonHousing(BaseTabularDataset):
 
         # Call the BaseTabularDataset constructor with normalization enabled
         super().__init__(df, input_cols, target_col, normalize=True, classification=False)
-

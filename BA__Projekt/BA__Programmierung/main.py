@@ -29,7 +29,7 @@ warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 # Dataset tokens to skip during training and visualization
 SKIP_TOKENS = {
-    "boston_housing",
+    # "boston_housing",
     "combined_cycle_power_plant",
     "concrete_compressive_strength",
     "condition_based_maintenance_of_naval_propulsion_plants",
@@ -38,7 +38,7 @@ SKIP_TOKENS = {
     "kin8nm",
     "nmavani_func1",
     "wine_quality_red",
-    # "wine_quality_white"
+    "wine_quality_white"
 }
 
 

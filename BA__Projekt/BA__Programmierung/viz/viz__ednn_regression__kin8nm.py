@@ -5,16 +5,47 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import r2_score, mean_absolute_percentage_error
-from sklearn.preprocessing import StandardScaler
-from torch.utils.data import DataLoader
 
 from BA__Programmierung.config import VIZ_PATH
 from BA__Programmierung.ml.datasets.dataset__torch__kin8nm import load_kin8nm_dataset
 from models.model__generic_ensemble import GenericEnsembleRegressor  # Assuming ensemble model for kin8nm
+from sklearn.metrics import r2_score, mean_absolute_percentage_error
+from sklearn.preprocessing import StandardScaler
+from torch.utils.data import DataLoader
 
 
 def evaluate_and_save_dashboard_ensemble(model, dataloader, scaler_y, device, save_dir):
+    """
+    Evaluates the ensemble model and saves various visualizations of the results.
+
+    This function performs the following:
+    1. Computes predictions for the data using the ensemble model.
+    2. Inverts the scaling transformation (if applicable).
+    3. Calculates performance metrics (R² and MAPE).
+    4. Saves several plots:
+       - True vs Predicted
+       - Residual Distribution
+       - Residuals vs True Targets
+       - Uncertainty vs Absolute Error
+       - Histograms for model parameters (mu, v, alpha, beta)
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The trained ensemble model used for predictions.
+    dataloader : torch.utils.data.DataLoader
+        The DataLoader containing the input data.
+    scaler_y : sklearn.preprocessing.StandardScaler
+        Scaler used for the target values (used to inverse transform the predictions).
+    device : torch.device
+        The device (CPU or GPU) where the model is loaded.
+    save_dir : str
+        Directory where the visualizations will be saved.
+
+    Returns
+    -------
+    None
+    """
     model.eval()
     mu_list, v_list, alpha_list, beta_list, targets_list = [], [], [], [], []
 
@@ -59,7 +90,7 @@ def evaluate_and_save_dashboard_ensemble(model, dataloader, scaler_y, device, sa
 
     os.makedirs(save_dir, exist_ok=True)
 
-    # Plot 1: True vs Predicted with uncertainty
+    # Plot 1: True vs Predicted with Uncertainty
     plt.figure(figsize=(8, 6))
     sns.scatterplot(x=targets.flatten(), y=mu.flatten(), alpha=0.6)
     plt.errorbar(targets.flatten(), mu.flatten(), yerr=sigma.flatten(), fmt='o', alpha=0.2, color='gray')
@@ -131,6 +162,28 @@ def evaluate_and_save_dashboard_ensemble(model, dataloader, scaler_y, device, sa
 
 
 def main():
+    """
+    Main function for training and evaluating the EDNN ensemble model on the Kin8nm dataset.
+
+    This function:
+    1. Loads the dataset.
+    2. Scales the features and target.
+    3. Defines and configures the ensemble model.
+    4. Loads a pre-trained model.
+    5. Evaluates the model and saves visualizations.
+
+    Parameters
+    ----------
+    None
+
+    Returns
+    -------
+    None
+
+    Example
+    -------
+    >>> main()  # Run the main function for training and evaluating the model
+    """
     csv_path = "assets/data/raw/dataset__kin8nm-dataset_2175/dataset__kin8nm-dataset_2175.csv"
     dataset = load_kin8nm_dataset(csv_path)
 
@@ -175,4 +228,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

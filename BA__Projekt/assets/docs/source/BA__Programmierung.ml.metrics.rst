@@ -10,7 +10,7 @@ Submodules
    BA__Programmierung.ml.metrics.metrics
    BA__Programmierung.ml.metrics.metrics_registry
    BA__Programmierung.ml.metrics.metrics_registry_definitions
-   BA__Programmierung.ml.metrics.metrics_treshholds
+   BA__Programmierung.ml.metrics.metrics_thresholds
 
 Module contents
 ---------------

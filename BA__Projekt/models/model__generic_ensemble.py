@@ -1,4 +1,5 @@
 # BA__Projekt/models/model__generic_ensemble.py
+
 """
 This module defines the GenericEnsembleRegressor class, which ensembles
 multiple instances of a base `GenericRegressor` model to improve predictive

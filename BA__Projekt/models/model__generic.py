@@ -1,4 +1,5 @@
 # BA__Projekt/models/generic_model.py
+
 """
 This module provides the `GenericRegressor` class for building flexible
 neural network regressors, including support for evidential uncertainty modeling.
