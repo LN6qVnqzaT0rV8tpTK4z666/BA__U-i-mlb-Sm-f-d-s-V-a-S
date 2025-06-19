@@ -49,3 +49,4 @@ if __name__ == "__main__":
     print(f"Train: {len(train_ds)} samples, Test: {len(test_ds)} samples")
     img, label = train_ds[0]
     print(f"Image shape: {img.shape}, 🔢 Label: {label}")
+

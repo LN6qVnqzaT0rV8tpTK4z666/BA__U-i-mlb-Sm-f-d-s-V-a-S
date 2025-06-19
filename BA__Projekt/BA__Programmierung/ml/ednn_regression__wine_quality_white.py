@@ -1,4 +1,5 @@
-# BA__Programmierung/ml/ednn_regression__wine-quality-white_ensemble.py
+# BA__Projekt/BA__Programmierung/ml/ednn_regression__wine_quality_white.py
+
 """
 Module for training an evidential deep neural network ensemble on the Wine Quality White dataset.
 
@@ -99,3 +100,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

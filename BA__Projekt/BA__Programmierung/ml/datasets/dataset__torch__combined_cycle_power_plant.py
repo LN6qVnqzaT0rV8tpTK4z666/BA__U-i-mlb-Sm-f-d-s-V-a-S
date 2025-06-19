@@ -1,4 +1,4 @@
-# BA__Programmierung/ml/datasets/dataset__torch__combined-cycle-power-plant.py
+# BA__Projekt/BA__Programmierung/ml/datasets/dataset__torch__combined_cycle_power_plant.py
 
 import pandas as pd
 
@@ -54,3 +54,4 @@ class DatasetTorchCombinedCyclePowerPlant(BaseTabularDataset):
             normalize=normalize,
             classification=False,
         )
+

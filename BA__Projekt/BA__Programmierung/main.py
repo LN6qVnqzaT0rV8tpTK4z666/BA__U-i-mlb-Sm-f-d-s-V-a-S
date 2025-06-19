@@ -1,4 +1,5 @@
 # BA__Projekt/BA__Programmierung/main.py
+
 """
 Main project orchestration script for training and visualizing models.
 
@@ -122,3 +123,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

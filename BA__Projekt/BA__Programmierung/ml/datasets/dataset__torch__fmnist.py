@@ -1,6 +1,5 @@
 # BA__Projekt/BA__Programmierung/ml/datasets/dataset__torch__fmnist.py
 
-
 from BA__Programmierung.ml.datasets.dataset__torch__base_image_classification import (
     BaseImageCSVClassificationDataset,
 )
@@ -24,3 +23,4 @@ if __name__ == "__main__":
     print(f"Train size: {len(train_ds)}, Test size: {len(test_ds)}")
     img, label = train_ds[0]
     print(f"Image shape: {img.shape}, Label: {label}")
+

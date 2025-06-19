@@ -138,3 +138,4 @@ class DatasetTorchCIFAR10AllBatches(BaseImageNDArrayDataset):
 
         images = np.concatenate(images, axis=0)
         super().__init__(images, labels, transform=transform, normalize=True)
+

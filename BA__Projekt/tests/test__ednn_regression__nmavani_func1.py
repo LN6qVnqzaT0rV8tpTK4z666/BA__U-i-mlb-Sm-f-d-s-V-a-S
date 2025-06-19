@@ -97,3 +97,4 @@ def test_model_performance(data_and_model):
 def test_model_type(data_and_model):
     model, _, _, _ = data_and_model
     assert isinstance(model, GenericEnsembleRegressor)
+

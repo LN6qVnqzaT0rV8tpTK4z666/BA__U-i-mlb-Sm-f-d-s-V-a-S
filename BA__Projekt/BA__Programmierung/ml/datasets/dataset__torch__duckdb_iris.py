@@ -86,3 +86,4 @@ class DatasetTorchDuckDBIris(BaseTabularDataset):
             normalize=normalize,
             classification=True,
         )
+

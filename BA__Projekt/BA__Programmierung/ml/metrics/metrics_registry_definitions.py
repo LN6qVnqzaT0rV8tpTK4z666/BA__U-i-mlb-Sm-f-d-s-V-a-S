@@ -1,4 +1,5 @@
 # BA__Projekt/BA__Programmierung/ml/metrics/metrics_registry_definitions.py
+
 """
 metrics_registry_definitions
 ============================
@@ -526,3 +527,4 @@ def meta_metric__bnn_ednn(uda, meta_calibration_score, corr_err_epistemic, ncg) 
 #         0.25 * corr_err_epistemic +
 #         0.25 * (1 - ncg)
 #     )
+

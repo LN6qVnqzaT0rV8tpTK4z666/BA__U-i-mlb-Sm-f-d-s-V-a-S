@@ -1,4 +1,5 @@
-# BA__Programmierung/ml/ednn_regression__nmavani_func1.py
+# BA__Projekt/BA__Programmierung/ml/ednn_regression__nmavani_func1.py
+
 """
 Train an evidential deep ensemble regressor on the nmavani_func1 dataset.
 
@@ -101,3 +102,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

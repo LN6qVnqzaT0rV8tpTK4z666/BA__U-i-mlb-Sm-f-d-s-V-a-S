@@ -1,4 +1,4 @@
-# BA__Programmierung/ml/ednn_regression__boston_housing.py
+# BA__Projekt/BA__Programmierung/ml/ednn_regression__boston_housing.py
 
 import os
 import torch
@@ -92,3 +92,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

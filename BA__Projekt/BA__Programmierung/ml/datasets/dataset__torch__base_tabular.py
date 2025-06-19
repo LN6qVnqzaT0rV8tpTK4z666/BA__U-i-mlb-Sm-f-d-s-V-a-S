@@ -158,3 +158,4 @@ class BaseTabularDataset(Dataset):
             Tensor containing label data.
         """
         return self.y
+

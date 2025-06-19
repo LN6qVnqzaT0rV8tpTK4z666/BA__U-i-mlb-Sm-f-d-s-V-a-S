@@ -1,4 +1,5 @@
 # BA__Projekt/tests/test__ednn_regression__kin8nm.py
+
 import os
 import numpy as np
 import pytest
@@ -98,3 +99,4 @@ def test_model_r2_and_mape(data_and_model):
 def test_model_class_type(data_and_model):
     model, _, _, _ = data_and_model
     assert isinstance(model, GenericEnsembleRegressor), "Model should be GenericEnsembleRegressor"
+

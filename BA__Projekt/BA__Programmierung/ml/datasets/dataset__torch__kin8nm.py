@@ -50,3 +50,4 @@ if __name__ == "__main__":
     print(f"Dataset size: {len(dataset)}")
     x, y = dataset[0]
     print(f"Features shape: {x.shape}, Target: {y.item()}")
+

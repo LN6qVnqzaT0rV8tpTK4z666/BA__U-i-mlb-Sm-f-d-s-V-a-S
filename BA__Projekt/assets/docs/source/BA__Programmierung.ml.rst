@@ -32,6 +32,7 @@ Submodules
    BA__Programmierung.ml.ednn_regression__nmavani_func1
    BA__Programmierung.ml.ednn_regression__wine_quality_red
    BA__Programmierung.ml.ednn_regression__wine_quality_white
+   BA__Programmierung.ml.run_experiment
 
 Module contents
 ---------------

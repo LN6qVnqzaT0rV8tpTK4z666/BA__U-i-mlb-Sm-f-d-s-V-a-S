@@ -1,4 +1,5 @@
-# BA__Programmierung/ml/utils/training_utils.py
+# BA__Projekt/BA__Programmierung/ml/utils/training_utils.py
+
 """
 training_utils.py
 
@@ -370,3 +371,4 @@ def train_with_early_stopping(model, train_loader, val_loader, optimizer, model_
         if epochs_no_improve >= patience:
             print(f"Early stopping at epoch {epoch+1}")
             break
+

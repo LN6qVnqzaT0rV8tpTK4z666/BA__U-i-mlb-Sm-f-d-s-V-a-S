@@ -68,3 +68,4 @@ class DatasetTorchDuckDBFunc1(BaseTabularDataset):
             normalize=normalize,
             classification=False,
         )
+

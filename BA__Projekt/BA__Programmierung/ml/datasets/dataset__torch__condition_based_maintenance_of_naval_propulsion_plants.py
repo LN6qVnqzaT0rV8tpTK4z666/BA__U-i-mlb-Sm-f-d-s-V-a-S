@@ -73,3 +73,4 @@ class NavalPropulsionDataset(BaseTabularDataset):
             normalize=normalize,
             classification=False,
         )
+

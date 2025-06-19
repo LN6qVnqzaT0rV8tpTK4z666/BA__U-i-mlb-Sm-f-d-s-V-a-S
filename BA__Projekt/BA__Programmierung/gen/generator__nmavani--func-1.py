@@ -42,3 +42,4 @@ if __name__ == "__main__":
 
     df = generate_dataset(n_samples=100)
     save_dataset(df, output_paths)
+

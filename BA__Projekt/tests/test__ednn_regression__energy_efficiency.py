@@ -1,4 +1,5 @@
 # BA__Projekt/tests/test__ednn_regression__energy_efficiency.py
+
 import unittest
 import os
 import shutil
@@ -104,3 +105,4 @@ class TestEvidentialRegressionEnergyEfficiencyEnsemble(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

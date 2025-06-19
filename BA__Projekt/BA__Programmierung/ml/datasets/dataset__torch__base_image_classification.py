@@ -129,3 +129,4 @@ class BaseImageCSVClassificationDataset(Dataset):
             image = self.transform(image)
 
         return image, label
+

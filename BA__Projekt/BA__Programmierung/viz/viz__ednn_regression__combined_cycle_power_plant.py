@@ -1,4 +1,4 @@
-# BA__Programmierung/viz/viz__ednn_regression__combined-cycle-power-plant.py
+# BA__Projekt/BA__Programmierung/viz/viz__ednn_regression__combined_cycle_power_plant.py
 
 import os
 import torch
@@ -159,3 +159,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

@@ -1,4 +1,5 @@
 # BA__Projekt/BA__Programmierung/ml/datasets/dataset__torch__boston-housing.py
+
 import pandas as pd
 
 from BA__Programmierung.ml.datasets.dataset__torch__base_tabular import (
@@ -68,3 +69,4 @@ class DatasetTorchBostonHousing(BaseTabularDataset):
 
         # Call the BaseTabularDataset constructor with normalization enabled
         super().__init__(df, input_cols, target_col, normalize=True, classification=False)
+

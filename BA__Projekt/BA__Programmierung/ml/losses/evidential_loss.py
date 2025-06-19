@@ -140,3 +140,4 @@ if __name__ == "__main__":
     print(f"5) scaled:      {evidential_loss(y, mu, v, alpha, beta, mode='scaled'):.6f}")
     print(f"6) variational: {evidential_loss(y, mu, v, alpha, beta, mode='variational'):.6f}")
     print(f"7) full:        {evidential_loss(y, mu, v, alpha, beta, mode='full'):.6f}")
+

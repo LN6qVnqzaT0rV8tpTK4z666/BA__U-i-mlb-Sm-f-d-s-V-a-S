@@ -1,4 +1,5 @@
-# BA__Programmierung/ml/ednn_regression__wine_quality_red.py
+# BA__Projekt/BA__Programmierung/ml/ednn_regression__wine_quality_red.py
+
 """
 Train an evidential deep ensemble regressor on the Wine Quality Red dataset.
 
@@ -101,3 +102,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

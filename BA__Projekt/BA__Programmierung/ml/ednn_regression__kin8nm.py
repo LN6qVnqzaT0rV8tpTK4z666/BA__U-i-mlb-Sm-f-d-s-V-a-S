@@ -1,4 +1,5 @@
 # BA__Projekt/BA__Programmierung/ml/ednn_regression__kin8nm.py
+
 """
 Train a Generic Ensemble Evidential Deep Neural Network on the Kin8nm dataset.
 
@@ -101,3 +102,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

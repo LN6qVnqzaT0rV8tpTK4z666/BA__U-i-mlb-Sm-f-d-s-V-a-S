@@ -89,3 +89,4 @@ class Metric:
     def reset(self) -> None:
         """Clear stored predictions and targets."""
         self.preds.clear()
+

@@ -56,6 +56,9 @@ build-training:
 		echo '==> Starting EDNN loss-visualization...' && \
 		cd ../viz/ && python3 viz__ednn_regression__iris.py"
 
+check-all:
+	scripts/check__all.sh
+
 create-files:
 	@echo "==> Create files by token..."
 	@bash -c "sh scripts/create__files_by_token.sh"

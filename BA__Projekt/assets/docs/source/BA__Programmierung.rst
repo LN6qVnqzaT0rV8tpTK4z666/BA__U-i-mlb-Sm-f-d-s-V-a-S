@@ -19,6 +19,7 @@ Submodules
    :maxdepth: 4
 
    BA__Programmierung.config
+   BA__Programmierung.config_refactor
    BA__Programmierung.main
 
 Module contents

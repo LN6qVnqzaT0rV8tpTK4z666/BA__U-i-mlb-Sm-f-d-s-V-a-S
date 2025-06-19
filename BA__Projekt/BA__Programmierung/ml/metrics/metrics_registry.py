@@ -1,4 +1,5 @@
 # BA__Projekt/BA__Programmierung/ml/metrics/metrics_registry.py
+
 """
 Metrics module for evaluating machine learning models.
 
@@ -319,3 +320,4 @@ if __name__ == "__main__":
     metrics_registry.all("uq")["nll_gaussian"](mean, logvar, y_true)
     metrics_registry.all("uq")["energy_score"](y_samples, y_true)
     metrics_registry.report("uq")
+

@@ -1,4 +1,5 @@
 # BA__Projekt/BA__Programmierung/db/persist.py
+
 """
 Module for persisting raw dataset CSV files and associated SQLite databases into DuckDB files.
 
@@ -102,3 +103,4 @@ def db__persist():
         console.log(f"[green]✔ Persistiert:[/] {duckdb_path.name}")
 
     console.log("[bold green]Alle nicht-persistierten Datensätze wurden gespeichert.[/]")
+

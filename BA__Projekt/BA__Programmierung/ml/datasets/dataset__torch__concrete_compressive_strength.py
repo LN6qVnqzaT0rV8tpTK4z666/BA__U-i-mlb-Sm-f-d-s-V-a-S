@@ -58,3 +58,4 @@ class DatasetTorchConcreteCompressiveStrength(BaseTabularDataset):
             normalize=normalize,
             classification=False,
         )
+

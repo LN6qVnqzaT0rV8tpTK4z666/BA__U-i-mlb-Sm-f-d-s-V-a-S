@@ -69,3 +69,4 @@ if __name__ == "__main__":
     print(f"Loaded {len(dataset)} samples.")
     x, y = dataset[0]
     print(f"Features shape: {x.shape}, Quality label: {y}")
+
