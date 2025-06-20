@@ -29,7 +29,7 @@ EXISTING_FOLDERS=(
     "$PROGRAMMING_BASE/ml/utils"
     "$PROGRAMMING_BASE/util"
     "$PROGRAMMING_BASE/viz"
-    "$PROJECT_BASE/tests"  # Der Tests-Ordner wird jetzt auch berücksichtigt
+    "$PROJECT_BASE/tests"
 )
 
 # Liste von Dateimustern oder Dateinamen, die ignoriert werden sollen

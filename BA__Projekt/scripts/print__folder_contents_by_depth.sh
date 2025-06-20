@@ -1,68 +1,49 @@
 #!/bin/bash
-# BA__Projekt/scripts/print__folder_contents_by_depth.sh
+# scripts/print__folder_contents_by_depth.sh
 
-print_tree() {
-    local dir="$1"
-    local prefix="$2"
-    local current_depth="$3"
-    local max_depth="$4"
-
-    basename=$(basename "$dir")
-    echo "${prefix}${basename}/"
-
-    if [[ -n "$max_depth" && "$current_depth" -ge "$max_depth" ]]; then
-        return
-    fi
-
-    local items=()
-    while IFS= read -r -d '' item; do
-        items+=("$item")
-    done < <(find "$dir" -mindepth 1 -maxdepth 1 -print0 | sort -z)
-
-    local count=${#items[@]}
-    for ((i=0; i<count; i++)); do
-        local path="${items[$i]}"
-        local name=$(basename "$path")
-        local is_last=$((i == count - 1))
-        local connector="├── "
-        [[ "$is_last" == 1 ]] && connector="└── "
-
-        if [[ -d "$path" ]]; then
-            echo "${prefix}${connector}${name}/"
-            print_tree "$path" "${prefix}$( [[ $is_last == 1 ]] && echo "    " || echo "│   ")" $((current_depth + 1)) "$max_depth"
-        else
-            echo "${prefix}${connector}${name}"
-        fi
-    done
-}
-
-# ─── Accept Parameters ─────────────────────────────────────────────────────────
-
+# Usage info
 usage() {
-    echo "Usage: $0 <target_folder> [max_depth]"
-    echo "Example: $0 viz 1"
-    exit 1
+  echo "Usage: $0 <directory> [max_depth]"
+  exit 1
 }
 
-# Check for at least 1 argument
-if [[ $# -lt 1 ]]; then
-    usage
+# Arguments
+ROOT="$1"
+MAX_DEPTH="$2"
+
+if [[ -z "$ROOT" ]]; then
+  usage
 fi
 
-root_input="$1"
-depth_input="$2"
-
-# Validate directory
-if [[ ! -d "$root_input" ]]; then
-    echo "[Error] Directory '$root_input' does not exist or is not a folder."
-    exit 1
+if [[ ! -d "$ROOT" ]]; then
+  echo "❌ '$ROOT' is not a valid directory."
+  exit 1
 fi
 
-# Validate depth
-if [[ -n "$depth_input" && ! "$depth_input" =~ ^[0-9]+$ ]]; then
-    echo "[Error] Depth must be a number."
-    exit 1
-fi
+# Normalize root path and depth
+ROOT=$(realpath "$ROOT")
+[[ -z "$MAX_DEPTH" ]] && MAX_DEPTH=99
 
-# Execute
-print_tree "$root_input" "" 0 "$depth_input"
+# Detect depth of root path
+ROOT_DEPTH=$(awk -F'/' '{print NF}' <<< "$ROOT")
+
+# Traverse directories
+find "$ROOT" -type d | while read -r dir; do
+  CURRENT_DEPTH=$(awk -F'/' '{print NF}' <<< "$dir")
+  REL_DEPTH=$((CURRENT_DEPTH - ROOT_DEPTH))
+
+  # Skip if too deep
+  if (( REL_DEPTH > MAX_DEPTH )); then
+    continue
+  fi
+
+  # Indentation based on depth
+  indent=""
+  for ((i=0; i<REL_DEPTH; i++)); do
+    indent+="│   "
+  done
+
+  # Connector symbol
+  base=$(basename "$dir")
+  echo "${indent}├── ${base}/"
+done
