@@ -1,6 +1,7 @@
+# BA__Projekt/tests/BA__Programmierung/ml/metrics/test__metrics_thresholds.py
 import unittest
 
-from metrics_treshholds import metric_thresholds
+from BA__Programmierung.ml.metrics.metrics_thresholds import metric_thresholds
 
 
 class TestMetricsThresholds(unittest.TestCase):
@@ -12,8 +13,8 @@ class TestMetricsThresholds(unittest.TestCase):
         """
         # List of metrics to check for thresholds
         metrics = [
-            "mse", "rmse", "mae", "mape", "r2_score", "ece", "ace", "elbo", 
-            "nll_gaussian", "mean_pred_variance", "energy_score", "kl_divergence_normal", 
+            "mse", "rmse", "mae", "mape", "r2_score", "ece", "ace", "elbo",
+            "nll_gaussian", "mean_pred_variance", "energy_score", "kl_divergence_normal",
             "mutual_information", "calibration_error", "uda", "ncg", "meta_metric__bnn_ednn"
         ]
 
@@ -60,8 +61,8 @@ class TestMetricsThresholds(unittest.TestCase):
         """
         # List of all possible metrics expected to have thresholds
         expected_metrics = [
-            "mse", "rmse", "mae", "mape", "r2_score", "ece", "ace", "elbo", 
-            "nll_gaussian", "mean_pred_variance", "energy_score", "kl_divergence_normal", 
+            "mse", "rmse", "mae", "mape", "r2_score", "ece", "ace", "elbo",
+            "nll_gaussian", "mean_pred_variance", "energy_score", "kl_divergence_normal",
             "mutual_information", "calibration_error", "uda", "ncg", "meta_metric__bnn_ednn"
         ]
 
@@ -71,3 +72,4 @@ class TestMetricsThresholds(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

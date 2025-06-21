@@ -1,7 +1,7 @@
+# BA__Projekt/tests/BA__Programmierung/ml/datasets/test__dataset__torch__fmnist.py
 import unittest
 from unittest.mock import patch, MagicMock
 from BA__Programmierung.ml.datasets.dataset__torch__fmnist import load_fashion_mnist_datasets
-from BA__Programmierung.ml.datasets.dataset__torch__base_image_classification import BaseImageCSVClassificationDataset
 
 class TestFashionMNISTLoading(unittest.TestCase):
 
@@ -21,11 +21,11 @@ class TestFashionMNISTLoading(unittest.TestCase):
 
         # Ensure that the datasets are loaded with the correct paths
         mock_base_image_classification_dataset.assert_any_call(
-            "assets/data/raw/dataset__fmnist/fashion-mnist_training.csv", 
+            "assets/data/raw/dataset__fmnist/fashion-mnist_training.csv",
             image_shape=(1, 28, 28), transform=None, normalize=True
         )
         mock_base_image_classification_dataset.assert_any_call(
-            "assets/data/raw/dataset__fmnist/fashion-mnist_test.csv", 
+            "assets/data/raw/dataset__fmnist/fashion-mnist_test.csv",
             image_shape=(1, 28, 28), transform=None, normalize=True
         )
 
@@ -69,11 +69,11 @@ class TestFashionMNISTLoading(unittest.TestCase):
 
         # Ensure that the image shape and normalization are set correctly
         mock_base_image_classification_dataset.assert_any_call(
-            "assets/data/raw/dataset__fmnist/fashion-mnist_training.csv", 
+            "assets/data/raw/dataset__fmnist/fashion-mnist_training.csv",
             image_shape=(1, 28, 28), transform=None, normalize=True
         )
         mock_base_image_classification_dataset.assert_any_call(
-            "assets/data/raw/dataset__fmnist/fashion-mnist_test.csv", 
+            "assets/data/raw/dataset__fmnist/fashion-mnist_test.csv",
             image_shape=(1, 28, 28), transform=None, normalize=True
         )
 
@@ -88,3 +88,4 @@ class TestFashionMNISTLoading(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

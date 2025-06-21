@@ -72,3 +72,4 @@ class DatasetTorchBostonHousing(BaseTabularDataset):
 
         # Call the BaseTabularDataset constructor with normalization enabled
         super().__init__(df, input_cols, target_col, normalize=True, classification=False)
+

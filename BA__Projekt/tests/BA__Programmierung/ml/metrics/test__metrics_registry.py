@@ -1,5 +1,5 @@
+# BA__Projekt/tests/BA__Programmierung/ml/metrics/test__metrics_registry.py
 import unittest
-from unittest.mock import MagicMock
 import torch
 from metrics_registry import MetricsRegistry
 
@@ -48,7 +48,7 @@ class TestMetricsRegistry(unittest.TestCase):
         y_true = torch.tensor([1, 2, 4])
         
         # Register the metric
-        self.registry.register(token="classification", fn=lambda y_pred, y_true: (y_pred == y_true).float().mean(), 
+        self.registry.register(token="classification", fn=lambda y_pred, y_true: (y_pred == y_true).float().mean(),
                                name="accuracy", accumulate=True, arg_names=["y_pred", "y_true"])
 
         # Add a batch to the registry
@@ -136,3 +136,4 @@ class TestMetricsRegistry(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

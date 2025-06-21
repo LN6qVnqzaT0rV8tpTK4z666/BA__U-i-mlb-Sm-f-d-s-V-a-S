@@ -1,7 +1,7 @@
+# BA__Projekt/tests/BA__Programmierung/ml/datasets/test__dataset__torch__wine_quality_red.py
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 import pandas as pd
-import torch
 from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_red import WineQualityRedDataset
 
 
@@ -35,8 +35,8 @@ class TestWineQualityRedDataset(unittest.TestCase):
         dataset = WineQualityRedDataset(csv_path)
 
         # Ensure that the correct columns are selected as features and target
-        self.assertEqual(dataset.input_cols, ["fixed acidity", "volatile acidity", "citric acid", 
-                                              "residual sugar", "chlorides", "free sulfur dioxide", 
+        self.assertEqual(dataset.input_cols, ["fixed acidity", "volatile acidity", "citric acid",
+                                              "residual sugar", "chlorides", "free sulfur dioxide",
                                               "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"])
         self.assertEqual(dataset.target_col, "quality")
 
@@ -83,8 +83,8 @@ class TestWineQualityRedDataset(unittest.TestCase):
         dataset = WineQualityRedDataset(csv_path)
 
         # Ensure that the last column is the target and the rest are features
-        self.assertEqual(dataset.input_cols, ["fixed acidity", "volatile acidity", "citric acid", 
-                                              "residual sugar", "chlorides", "free sulfur dioxide", 
+        self.assertEqual(dataset.input_cols, ["fixed acidity", "volatile acidity", "citric acid",
+                                              "residual sugar", "chlorides", "free sulfur dioxide",
                                               "total sulfur dioxide", "density", "pH", "sulphates", "alcohol"])
         self.assertEqual(dataset.target_col, "quality")
 
@@ -151,3 +151,4 @@ class TestWineQualityRedDataset(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

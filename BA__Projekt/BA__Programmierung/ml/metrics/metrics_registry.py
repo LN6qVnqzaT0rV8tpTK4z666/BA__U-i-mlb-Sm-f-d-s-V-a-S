@@ -32,7 +32,47 @@ Register a new metric and evaluate it:
 
 from collections import defaultdict
 from collections.abc import Callable
-from BA__Programmierung.ml.metrics.metrics_registry_definitions import accuracy, ace, aleatoric_variance, calibration_error, continuous_ranked_probability_score, ece, elbo, energy_score, epistemic_variance, evidence, kl_divergence_normal, mae, mape, marginal_likelihood, mean_pred_variance, meta_metric__bnn_ednn, mpiw, mse, mutual_information, ncg, nll_gaussian, picp, predictive_entropy, r2_score, regression_ece, rmse, top_k_accuracy, uda
+from BA__Programmierung.ml.metrics.metrics_registry_definitions import (
+    accuracy,
+    ace,
+    aleatoric_variance,
+    calibration_error,
+    continuous_ranked_probability_score,
+    ece,
+    elbo,
+    energy_score,
+    epistemic_variance,
+    evidence,
+    kl_divergence_normal,
+    mae,
+    mape,
+    marginal_likelihood,
+    mean_pred_variance,
+    meta_metric__bnn_ednn,
+    mpiw,
+    mse,
+    mutual_information,
+    ncg,
+    nll_gaussian,
+    picp,
+    predictive_entropy,
+    r2_score,
+    regression_ece,
+    rmse,
+    statistical__mod_pred__mean,
+    statistical__mod_pred__variance_band,
+    statistical__mod_pred__standard_error,
+    statistical__mod_pred__quantiles,
+    statistical__mod_pred__predictive_mean,
+    statistical__mod_pred__plus_minus_sigma,
+    statistical__mod_pred__plus_minus_1_sigma,
+    statistical__mod_pred__plus_minus_2_sigma,
+    statistical__mod_pred__plus_minus_3_sigma,
+    statistical__mod_pred__plus_minus_4_sigma,
+    statistical__mod_pred__plus_minus_5_sigma,
+    top_k_accuracy,
+    uda
+)
 from BA__Programmierung.ml.metrics.metrics import Metric
 from BA__Programmierung.util.singleton import Singleton
 from typing import Union
@@ -247,8 +287,22 @@ class MetricsRegistry(metaclass=Singleton):
 # ───── Global Singleton Registry ───── #
 metrics_registry = MetricsRegistry()
 
+# ───── Register Statistical Functions ───── #
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__mean, accumulate=False, arg_names=["y_pred"], name="statistical__mod_pred__mean")
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__variance_band, accumulate=False, arg_names=["y_pred"], name="statistical__mod_pred__variance_band")
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__standard_error, accumulate=False, arg_names=["y_pred"], name="statistical__mod_pred__standard_error")
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__quantiles, accumulate=False, arg_names=["y_pred", "quantiles"], name="statistical__mod_pred__quantiles")
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__predictive_mean, accumulate=False, arg_names=["y_pred"], name="statistical__mod_pred__predictive_mean")
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__plus_minus_sigma, accumulate=False, arg_names=["y_pred", "num_sigma"], name="statistical__mod_pred__plus_minus_sigma")
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__plus_minus_1_sigma, accumulate=False, arg_names=["y_pred"], name="statistical__mod_pred__plus_minus_1_sigma")
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__plus_minus_2_sigma, accumulate=False, arg_names=["y_pred"], name="statistical__mod_pred__plus_minus_2_sigma")
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__plus_minus_3_sigma, accumulate=False, arg_names=["y_pred"], name="statistical__mod_pred__plus_minus_3_sigma")
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__plus_minus_4_sigma, accumulate=False, arg_names=["y_pred"], name="statistical__mod_pred__plus_minus_4_sigma")
+metrics_registry.register(token="statistical", fn=statistical__mod_pred__plus_minus_5_sigma, accumulate=False, arg_names=["y_pred"], name="statistical__mod_pred__plus_minus_5_sigma")
+
 # ───── Register Metrics ───── #
 #.register(self, token: str, fn: Callable, name: str = None, accumulate: bool = False)
+
 # ───── Classification ─────
 metrics_registry.register(token="classification", fn=accuracy, accumulate=True, arg_names=["y_pred", "y_true"], name="accuracy")
 # metrics_registry.register(token="classification", fn=brier_score, accumulate=True, arg_names=["y_pred", "y_true"], name="brier_score")
@@ -320,4 +374,3 @@ if __name__ == "__main__":
     metrics_registry.all("uq")["nll_gaussian"](mean, logvar, y_true)
     metrics_registry.all("uq")["energy_score"](y_samples, y_true)
     metrics_registry.report("uq")
-

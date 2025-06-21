@@ -1,8 +1,8 @@
+# BA__Projekt/tests/BA__Programmierung/ml/utils/test__training_utils.py
 import unittest
 from unittest.mock import MagicMock, patch
 import torch
 from training_utils import train_one_epoch, evaluate, train_with_early_stopping
-from BA__Programmierung.ml.losses.evidential_loss import evidential_loss
 
 
 class TestTrainingUtils(unittest.TestCase):
@@ -114,3 +114,4 @@ class TestTrainingUtils(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

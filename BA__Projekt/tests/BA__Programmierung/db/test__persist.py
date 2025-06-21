@@ -1,8 +1,7 @@
+# BA__Projekt/tests/BA__Programmierung/db/test__persist.py
 import unittest
 from unittest.mock import patch, MagicMock
 from pathlib import Path
-import duckdb
-from io import StringIO
 from BA__Projekt. BA__Programmierung.db.persist import find_csv_files, find_sqlite_for_dataset, derive_dataset_name, db__persist
 
 
@@ -133,3 +132,4 @@ class TestPersist(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

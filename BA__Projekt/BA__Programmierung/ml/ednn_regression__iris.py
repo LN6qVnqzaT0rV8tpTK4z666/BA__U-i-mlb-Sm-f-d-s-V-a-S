@@ -12,15 +12,28 @@ This script performs the following steps:
 - Trains with early stopping and saves the best checkpoint.
 """
 
+# BA__Projekt/BA__Programmierung/ml/ednn_regression__iris.py
+
+"""
+Train an evidential deep ensemble regressor on the Iris dataset.
+
+This script performs the following steps:
+
+- Loads the Iris dataset from DuckDB.
+- Splits into training and validation sets (80/20).
+- Creates DataLoaders.
+- Configures and initializes a GenericEnsembleRegressor model.
+- Trains with early stopping and saves the best checkpoint.
+"""
+
 import os
 import torch
 
 from models.model__generic_ensemble import GenericEnsembleRegressor
 from BA__Programmierung.ml.metrics.metrics_registry import MetricsRegistry
 from BA__Programmierung.ml.datasets.dataset__torch__duckdb_iris import DatasetTorchDuckDBIris
-from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
+from BA__Programmierung.ml.utils.training_utils import load_model_checkpoint, train_with_early_stopping
 from torch.utils.data import DataLoader, random_split
-
 
 def main():
     # === Dataset loading ===
@@ -55,7 +68,7 @@ def main():
     n_models = 5
     seed = 42
     metric_bundles = MetricsRegistry.get_metric_bundles()
-    # loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    # loss_modes determine the type of loss function to use for training
     loss_modes = ["mse"]
     
     model_save_base = "assets/models/pth/ednn_regression__iris_ensemble"
@@ -71,11 +84,15 @@ def main():
         for i in range(n_models):
             torch.manual_seed(seed + i)
 
+            # Initialize the ensemble model
             model = GenericEnsembleRegressor(base_config=base_config, n_models=n_models).to(device)
             optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
             model_path = os.path.join(model_save_dir, f"model_{i}.pth")
             print(f"[{loss_mode.upper()}] Training model {i + 1}/{n_models}...")
+
+            # Load checkpoint if it exists
+            checkpoint, checkpoint_exists = load_model_checkpoint(model, optimizer, model_path, device)
 
             # Decide which token to use for metrics
             if loss_mode in ["nll", "full", "variational", "kl"]:
@@ -85,20 +102,36 @@ def main():
             else:
                 metrics_token = None  # or "probabilistic" depending on your setup
 
-            train_with_early_stopping(
-                model=model,
-                train_loader=train_loader,
-                val_loader=val_loader,
-                optimizer=optimizer,
-                model_path=model_path,
-                device=device,
-                epochs=100,
-                patience=5,
-                loss_mode=loss_mode,
-                metrics_token=metrics_token
-            )
-
+            # If checkpoint exists, resume from the last epoch
+            if checkpoint_exists:
+                train_with_early_stopping(
+                    model=model,
+                    train_loader=train_loader,
+                    val_loader=val_loader,
+                    optimizer=optimizer,
+                    model_path=model_path,
+                    device=device,
+                    epochs=100,
+                    patience=5,
+                    loss_mode=loss_mode,
+                    metrics_token=metrics_token,
+                    resume_epoch=checkpoint['epoch']  # Resume from the last checkpoint epoch
+                )
+            else:
+                # If no checkpoint exists, train the model from scratch
+                train_with_early_stopping(
+                    model=model,
+                    train_loader=train_loader,
+                    val_loader=val_loader,
+                    optimizer=optimizer,
+                    model_path=model_path,
+                    device=device,
+                    epochs=100,
+                    patience=5,
+                    loss_mode=loss_mode,
+                    metrics_token=metrics_token,
+                    resume_epoch=0  # Start from epoch 0
+                )
 
 if __name__ == "__main__":
     main()
-

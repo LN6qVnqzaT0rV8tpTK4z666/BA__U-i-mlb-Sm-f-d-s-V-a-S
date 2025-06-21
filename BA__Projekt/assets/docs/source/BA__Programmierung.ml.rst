@@ -18,6 +18,8 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
+   BA__Programmierung.ml.bnn_regression__hmc_nmavani-func-1
+   BA__Programmierung.ml.bnn_regression__svi_nmavani-func-1
    BA__Programmierung.ml.ednn_classification__cifar_10_python
    BA__Programmierung.ml.ednn_classification__fmnist
    BA__Programmierung.ml.ednn_classification__kmnist

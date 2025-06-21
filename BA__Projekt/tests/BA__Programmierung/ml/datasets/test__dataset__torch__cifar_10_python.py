@@ -1,3 +1,4 @@
+# BA__Projekt/tests/BA__Programmierung/ml/datasets/test__dataset__torch__cifar_10_python.py
 import unittest
 from unittest.mock import patch, MagicMock
 import torch
@@ -30,7 +31,7 @@ class TestBaseImageNDArrayDataset(unittest.TestCase):
         dataset = BaseImageCSVClassificationDataset(self.images, self.labels, normalize=False)
 
         # Ensure images are not normalized (should remain in the range [0, 255])
-        self.assertTrue(torch.all(dataset.images <= 255))  
+        self.assertTrue(torch.all(dataset.images <= 255))
         self.assertTrue(torch.all(dataset.images >= 0))
 
     def test_len(self):
@@ -117,3 +118,4 @@ class TestDatasetTorchCIFAR10AllBatches(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

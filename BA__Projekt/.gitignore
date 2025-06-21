@@ -8,6 +8,7 @@ assets/logs/
 assets/models/
 assets/notebooks/
 assets/pth/
+assets/repos/evidential-learning-pytorch
 assets/repos/industrialbenchmark
 assets/repos/MA_Uncertainty_in_ML_based_Surrogates
 assets/viz/
@@ -22,7 +23,6 @@ assets/viz/
 **/**/*.egg-info
 **/**/logs/
 **/**/ml/*ednn_classification__*.py
-**/**/ml/metrics/metrics_thresholds.py
 **/**/ml/run_experiment.py
 **/**/ml/utils/training_utils_refactor.py
 **/**/*png

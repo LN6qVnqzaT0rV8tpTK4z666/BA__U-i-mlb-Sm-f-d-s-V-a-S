@@ -29,6 +29,8 @@ warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 # Dataset tokens to skip during training and visualization
 SKIP_TOKENS = {
+    "hmc_nmanvani-func-1"
+    "svi_nmanvani-func-1"
     # "boston_housing",
     "combined_cycle_power_plant",
     "concrete_compressive_strength",
@@ -46,7 +48,7 @@ def get_target_keys():
     """
     Detect training scripts and derive dataset keys.
 
-    Scans the `ML_DIR` directory for files matching `ednn_regression__*.py`,
+    Scans the `ML_DIR` directory for files matching `ednn_regression__*.py` and `bnn_regression__*.py`,
     and extracts the dataset key from the filename.
 
     Returns:
@@ -54,9 +56,10 @@ def get_target_keys():
     """
     console = Console()
     console.log(ML_DIR)
+    # Get both ednn and bnn regression scripts
     return [
-        f.stem.replace("ednn_regression__", "")
-        for f in ML_DIR.glob("ednn_regression__*.py")
+        f.stem.replace("ednn_regression__", "").replace("bnn_regression__", "")
+        for f in ML_DIR.glob("ednn_regression__*.py") + ML_DIR.glob("bnn_regression__*.py")
         if f.is_file()
     ]
 
@@ -66,7 +69,7 @@ def dynamic_import_and_run(module_path, description=""):
     Dynamically import a module and execute its `main()` function.
 
     Args:
-        module_path (str): Python module path (e.g., `ml.ednn_regression__iris`).
+        module_path (str): Python module path (e.g., `ml.ednn_regression__iris` or `ml.bnn_regression__iris`).
         description (str): Optional human-readable description for logging.
 
     Raises:
@@ -107,8 +110,13 @@ def main():
             console.log(f"[yellow]Skipping training and visualization for: {key}[/yellow]")
             continue
 
-        ml_module = f"ml.ednn_regression__{key}"
-        viz_module = f"viz.viz__ednn_regression__{key}"
+        # Decide the module names based on 'ednn' or 'bnn'
+        if 'bnn' in key:
+            ml_module = f"ml.bnn_regression__{key}"
+            viz_module = f"viz.viz__bnn_regression__{key}"
+        else:
+            ml_module = f"ml.ednn_regression__{key}"
+            viz_module = f"viz.viz__ednn_regression__{key}"
 
         console.rule(f"[bold blue]Running Training: {key}[/bold blue]")
         dynamic_import_and_run(ml_module, description=f"ML Training ({key})")

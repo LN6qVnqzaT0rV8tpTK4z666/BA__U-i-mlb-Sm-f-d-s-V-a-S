@@ -314,7 +314,7 @@ def evaluate(model, data_loader, device, loss_mode="nll", metrics_token=None):
 
 
 def train_with_early_stopping(model, train_loader, val_loader, optimizer, model_path,
-                              device, epochs=50, patience=5, loss_mode="nll", metrics_token=None):
+                              device, epochs=50, patience=5, loss_mode="nll", metrics_token=None, resume_epoch=0):
     """
     Train a model with early stopping and metric tracking.
 
@@ -340,6 +340,8 @@ def train_with_early_stopping(model, train_loader, val_loader, optimizer, model_
         Loss variant to use. Default is "nll".
     metrics_token : str, optional
         Token to track and report relevant metrics.
+    resume_epoch : int, optional
+        The epoch number to resume training from (default is 0, meaning start from the beginning).
 
     Returns
     -------
@@ -349,7 +351,8 @@ def train_with_early_stopping(model, train_loader, val_loader, optimizer, model_
     best_val_loss = float("inf")
     epochs_no_improve = 0
 
-    for epoch in range(epochs):
+    # Resume training from the resume_epoch
+    for epoch in range(resume_epoch, epochs):
         train_loss = train_one_epoch(model, train_loader, optimizer, device, loss_mode)
         val_loss = evaluate(model, val_loader, device, loss_mode, metrics_token)
 
@@ -372,3 +375,27 @@ def train_with_early_stopping(model, train_loader, val_loader, optimizer, model_
             print(f"Early stopping at epoch {epoch+1}")
             break
 
+
+def load_model_checkpoint(model, optimizer, model_path, device):
+    """
+    Load the model and optimizer state from a checkpoint if it exists.
+    
+    Args:
+        model (torch.nn.Module): The model to load the checkpoint into.
+        optimizer (torch.optim.Optimizer): The optimizer to load the state into.
+        model_path (str): Path to the model checkpoint.
+        device (torch.device): The device to load the model onto.
+        
+    Returns:
+        bool: Whether the checkpoint was loaded successfully.
+    """
+    if os.path.exists(model_path):
+        print(f"Loading checkpoint from {model_path}...")
+        checkpoint = torch.load(model_path, map_location=device)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        epoch = checkpoint['epoch']
+        loss = checkpoint['loss']
+        print(f"Checkpoint loaded (Epoch: {epoch}, Loss: {loss})")
+        return True
+    return False

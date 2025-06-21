@@ -5,10 +5,9 @@ import torch
 
 from BA__Programmierung.ml.datasets.dataset__torch__boston_housing import DatasetTorchBostonHousing
 from BA__Programmierung.ml.metrics.metrics_registry import MetricsRegistry
-from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
+from BA__Programmierung.ml.utils.training_utils import load_model_checkpoint, train_with_early_stopping
 from models.model__generic import GenericRegressor
 from torch.utils.data import DataLoader, random_split
-
 
 def main():
     # Load dataset
@@ -47,7 +46,6 @@ def main():
     n_models = 5
     seed = 42
     metric_bundles = MetricsRegistry.get_metric_bundles()
-    # loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
     loss_modes = ["mse"]
 
     # Base path for saving models
@@ -68,6 +66,9 @@ def main():
             model_path = os.path.join(model_save_dir, f"model_{i}.pth")
             print(f"[{loss_mode.upper()}] Training model {i + 1}/{n_models}...")
 
+            # Load checkpoint if it exists
+            checkpoint, checkpoint_exists = load_model_checkpoint(model, optimizer, model_path, device)
+
             # Decide which token to use for metrics
             if loss_mode in ["nll", "full", "variational", "kl"]:
                 metrics_token = "uq"
@@ -76,20 +77,35 @@ def main():
             else:
                 metrics_token = None  # or "probabilistic" depending on your setup
 
-            train_with_early_stopping(
-                model=model,
-                train_loader=train_loader,
-                val_loader=val_loader,
-                optimizer=optimizer,
-                model_path=model_path,
-                device=device,
-                epochs=100,
-                patience=10,
-                loss_mode=loss_mode,
-                metrics_token=metrics_token,
-            )
-
+            if not checkpoint_exists:
+                # If no checkpoint exists, train the model from scratch
+                train_with_early_stopping(
+                    model=model,
+                    train_loader=train_loader,
+                    val_loader=val_loader,
+                    optimizer=optimizer,
+                    model_path=model_path,
+                    device=device,
+                    epochs=100,
+                    patience=10,
+                    loss_mode=loss_mode,
+                    metrics_token=metrics_token,
+                )
+            else:
+                # If checkpoint exists, resume training from the checkpoint
+                train_with_early_stopping(
+                    model=model,
+                    train_loader=train_loader,
+                    val_loader=val_loader,
+                    optimizer=optimizer,
+                    model_path=model_path,
+                    device=device,
+                    epochs=100,
+                    patience=10,
+                    loss_mode=loss_mode,
+                    metrics_token=metrics_token,
+                    resume_epoch=checkpoint['epoch'],  # Resume from last checkpoint epoch
+                )
 
 if __name__ == "__main__":
     main()
-

@@ -96,7 +96,8 @@ def main():
                 epochs=100,
                 patience=5,
                 loss_mode=loss_mode,
-                metrics_token=metrics_token
+                metrics_token=metrics_token,
+                resume_epoch=0
             )
 
 

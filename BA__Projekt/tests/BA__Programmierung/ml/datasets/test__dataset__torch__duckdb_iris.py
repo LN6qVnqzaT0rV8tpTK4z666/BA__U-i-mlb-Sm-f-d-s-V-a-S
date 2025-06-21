@@ -1,6 +1,6 @@
+# BA__Projekt/tests/BA__Programmierung/ml/datasets/test__dataset__torch__duckdb_iris.py
 import unittest
 from unittest.mock import patch, MagicMock
-import duckdb
 import pandas as pd
 import torch
 from BA__Programmierung.ml.datasets.dataset__torch__duckdb_iris import DatasetTorchDuckDBIris
@@ -119,3 +119,4 @@ class TestDatasetTorchDuckDBIris(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -1,6 +1,9 @@
+# BA__Projekt/tests/BA__Programmierung/ml/datasets/test__dataset__torch__kmnist.py
+
 import unittest
+
 from unittest.mock import patch, MagicMock
-from dataset__torch__kmnist import load_kmnist_datasets
+from BA__Programmierung.ml.datasets.dataset__torch__kmnist import load_kmnist_datasets
 from BA__Programmierung.ml.datasets.dataset__torch__base_image_classification import BaseImageCSVClassificationDataset
 
 
@@ -116,3 +119,4 @@ class TestKMNISTDatasetLoading(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

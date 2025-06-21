@@ -1,13 +1,16 @@
-import unittest
-from unittest.mock import patch, MagicMock
+# BA__Projekt/tests/BA__Programmierung/gen/test__generator__nmavani--func-1.py
+
+import numpy as np
 import pandas as pd
-import os
+import unittest
+
+from BA__Programmierung.gen.generator__nmavani__func_1 import generate_dataset, save_dataset
 from pathlib import Path
-from generator__nmavani__func_1 import generate_dataset, save_dataset
+from unittest.mock import patch
 
 
 class TestGeneratorFunc1(unittest.TestCase):
-
+    
     def test_generate_dataset(self):
         # Generate a dataset with default parameters
         df = generate_dataset(n_samples=10, x_min=-5, x_max=5, seed=42)
@@ -110,3 +113,4 @@ class TestGeneratorFunc1(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

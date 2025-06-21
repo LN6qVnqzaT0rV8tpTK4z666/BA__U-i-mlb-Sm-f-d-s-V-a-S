@@ -1,7 +1,7 @@
+# BA__Projekt/tests/BA__Programmierung/conv/test__conversion__txt_to_csv.py
 import unittest
 import os
 from unittest.mock import patch, MagicMock
-import pandas as pd
 from conversion__txt_to_csv import convert_txt_to_csv, process_txt_datasets
 
 
@@ -121,3 +121,4 @@ class TestConversionTxtToCsv(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

@@ -10,12 +10,14 @@ This script:
 - Trains the model with early stopping using a utility function
 """
 
+# BA__Projekt/BA__Programmierung/ml/ednn_regression__wine_quality_white.py
+
 import os
 import torch
 
 from BA__Programmierung.ml.metrics.metrics_registry import MetricsRegistry
 from BA__Programmierung.ml.datasets.dataset__torch__wine_quality_white import load_wine_quality_white_dataset
-from BA__Programmierung.ml.utils.training_utils import train_with_early_stopping
+from BA__Programmierung.ml.utils.training_utils import load_model_checkpoint, train_with_early_stopping
 from models.model__generic_ensemble import GenericEnsembleRegressor
 from torch.utils.data import DataLoader, random_split
 
@@ -28,8 +30,7 @@ def main():
     # === Split into training and validation sets ===
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
-    train_set, val_set = random_split(dataset, [train_size, val_size],
-                                      generator=torch.Generator().manual_seed(42))
+    train_set, val_set = random_split(dataset, [train_size, val_size], generator=torch.Generator().manual_seed(42))
 
     # === DataLoaders ===
     train_loader = DataLoader(train_set, batch_size=32, shuffle=True)
@@ -55,7 +56,7 @@ def main():
     n_models = 5
     seed = 42
     metric_bundles = MetricsRegistry.get_metric_bundles()
-    #loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
+    # loss_modes = ["nll", "abs", "mse", "kl", "scaled", "variational", "full"]
     loss_modes = ["mse"]
     model_save_base = "assets/models/pth/ednn_regression__wine_quality_white_ensemble"
 
@@ -70,11 +71,15 @@ def main():
         for i in range(n_models):
             torch.manual_seed(seed + i)
 
+            # Initialize the ensemble model
             model = GenericEnsembleRegressor(base_config=base_config, n_models=n_models).to(device)
             optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
             model_path = os.path.join(model_save_dir, f"model_{i}.pth")
             print(f"[{loss_mode.upper()}] Training model {i + 1}/{n_models}...")
+
+            # Load checkpoint if it exists
+            checkpoint, checkpoint_exists = load_model_checkpoint(model, optimizer, model_path, device)
 
             # Decide which token to use for metrics
             if loss_mode in ["nll", "full", "variational", "kl"]:
@@ -84,20 +89,37 @@ def main():
             else:
                 metrics_token = None  # or "probabilistic" depending on your setup
 
-            train_with_early_stopping(
-                model=model,
-                train_loader=train_loader,
-                val_loader=val_loader,
-                optimizer=optimizer,
-                model_path=model_path,
-                device=device,
-                epochs=100,
-                patience=5,
-                loss_mode=loss_mode,
-                metrics_token=metrics_token,
-            )
+            # If checkpoint exists, resume from the last epoch
+            if checkpoint_exists:
+                train_with_early_stopping(
+                    model=model,
+                    train_loader=train_loader,
+                    val_loader=val_loader,
+                    optimizer=optimizer,
+                    model_path=model_path,
+                    device=device,
+                    epochs=100,
+                    patience=5,
+                    loss_mode=loss_mode,
+                    metrics_token=metrics_token,
+                    resume_epoch=checkpoint['epoch']  # Resume from the last checkpoint epoch
+                )
+            else:
+                # If no checkpoint exists, train the model from scratch
+                train_with_early_stopping(
+                    model=model,
+                    train_loader=train_loader,
+                    val_loader=val_loader,
+                    optimizer=optimizer,
+                    model_path=model_path,
+                    device=device,
+                    epochs=100,
+                    patience=5,
+                    loss_mode=loss_mode,
+                    metrics_token=metrics_token,
+                    resume_epoch=0  # Start from epoch 0
+                )
 
 
 if __name__ == "__main__":
     main()
-

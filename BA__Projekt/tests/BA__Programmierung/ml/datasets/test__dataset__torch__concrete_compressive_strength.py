@@ -1,3 +1,4 @@
+# BA__Projekt/tests/BA__Programmierung/ml/datasets/test__dataset__torch__concrete_compressive_strength.py
 import unittest
 from unittest.mock import patch
 import pandas as pd
@@ -27,7 +28,7 @@ class TestDatasetTorchConcreteCompressiveStrength(unittest.TestCase):
         dataset = DatasetTorchConcreteCompressiveStrength(csv_path="fake_path.csv", normalize=True)
 
         # Ensure that the correct columns are selected as features and target
-        self.assertEqual(dataset.input_cols, ["Cement", "Blast Furnace Slag", "Fly Ash", "Water", 
+        self.assertEqual(dataset.input_cols, ["Cement", "Blast Furnace Slag", "Fly Ash", "Water",
                                               "Superplasticizer", "Coarse Aggregate", "Fine Aggregate", "Age"])
         self.assertEqual(dataset.target_col, "Concrete Compressive Strength")
 
@@ -55,7 +56,7 @@ class TestDatasetTorchConcreteCompressiveStrength(unittest.TestCase):
         dataset = DatasetTorchConcreteCompressiveStrength(csv_path="fake_path.csv", normalize=False)
 
         # Ensure that the correct columns are selected as features and target
-        self.assertEqual(dataset.input_cols, ["Cement", "Blast Furnace Slag", "Fly Ash", "Water", 
+        self.assertEqual(dataset.input_cols, ["Cement", "Blast Furnace Slag", "Fly Ash", "Water",
                                               "Superplasticizer", "Coarse Aggregate", "Fine Aggregate", "Age"])
         self.assertEqual(dataset.target_col, "Concrete Compressive Strength")
 
@@ -132,3 +133,4 @@ class TestDatasetTorchConcreteCompressiveStrength(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

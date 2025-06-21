@@ -49,6 +49,11 @@ Build whole project.
 make build-main
 ```
 
+Build project without documentation.
+```bash
+make build-develop
+```
+
 Optional: Visualize loss-training with TensorBoard or inspect `viz`.
 ```bash
 tensorboard --logdir /root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/data/processed/; http://localhost:6006

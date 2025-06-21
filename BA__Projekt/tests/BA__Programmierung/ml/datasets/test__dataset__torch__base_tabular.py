@@ -1,7 +1,7 @@
+# BA__Projekt/tests/BA__Programmierung/ml/datasets/test__dataset__torch__base_tabular.py
 import unittest
 import pandas as pd
 import torch
-from sklearn.preprocessing import StandardScaler
 from BA__Programmierung.ml.datasets.dataset__torch__base_tabular import BaseTabularDataset
 
 
@@ -118,3 +118,4 @@ class TestBaseTabularDataset(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+

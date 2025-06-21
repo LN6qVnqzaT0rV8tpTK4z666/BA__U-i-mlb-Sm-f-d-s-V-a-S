@@ -25,6 +25,7 @@ import torch
 import torch.nn.functional as tnf
 import torchmetrics.functional as tmf
 import numpy as np
+import pandas as pd
 import properscoring as ps
 from scipy.stats import norm
 
@@ -48,6 +49,238 @@ def accuracy(y_pred, y_true) -> float:
     """
     return (torch.argmax(y_pred, dim=1) == y_true).float().mean().item()
 
+
+# ───── Statistical Functions: Model Prediction ───── #
+
+def statistical__mod_pred__mean(y_pred: torch.Tensor) -> float:
+    """
+    Computes the statistical function, which could be the raw output of a model.
+    
+    Args:
+        y_pred (torch.Tensor): Predicted values by the model.
+        
+    Returns:
+        float: The mean of the predictions.
+    """
+    return y_pred.mean().item()
+
+
+def statistical__mod_pred__variance_band(y_pred: torch.Tensor) -> float:
+    """
+    Computes the variance-band for the predictions.
+    
+    Args:
+        y_pred (torch.Tensor): Predicted values by the model.
+        
+    Returns:
+        float: The variance of the predictions.
+    """
+    return y_pred.var(dim=0).mean().item()  # Variance along the first dimension (batch)
+
+
+def statistical__mod_pred__standard_error(y_pred: torch.Tensor) -> float:
+    """
+    Computes the standard error for the predictions.
+    
+    Args:
+        y_pred (torch.Tensor): Predicted values by the model.
+        
+    Returns:
+        float: The standard error of the predictions.
+    """
+    return (y_pred.std(dim=0) / torch.sqrt(torch.tensor(len(y_pred)))).mean().item()
+
+
+def statistical__mod_pred__quantiles(y_pred: torch.Tensor, quantiles: list = [0.25, 0.5, 0.75]) -> dict:
+    """
+    Computes the quantiles (e.g., 25th, 50th, 75th percentiles) of the predictions.
+    
+    Args:
+        y_pred (torch.Tensor): Predicted values by the model.
+        quantiles (list): List of quantiles to compute (default is [0.25, 0.5, 0.75]).
+        
+    Returns:
+        dict: Dictionary with quantiles as keys and their corresponding values.
+    """
+    quantile_values = {}
+    for q in quantiles:
+        quantile_values[f'quantile_{int(q*100)}'] = torch.quantile(y_pred, q).item()
+    return quantile_values
+
+
+def statistical__mod_pred__predictive_mean(y_pred: torch.Tensor) -> float:
+    """
+    Computes the statistical predictive mean for the predictions.
+    
+    Args:
+        y_pred (torch.Tensor): Predicted values by the model.
+        
+    Returns:
+        float: The mean of the predictions.
+    """
+    return y_pred.mean().item()
+
+
+def statistical__mod_pred__plus_minus_sigma(y_pred: torch.Tensor, num_sigma: int = 2) -> tuple:
+    """
+    Computes the interval defined by mean +/- num_sigma * standard deviation.
+    
+    Args:
+        y_pred (torch.Tensor): Predicted values by the model.
+        num_sigma (int): Number of standard deviations for the interval (default is 2).
+        
+    Returns:
+        tuple: Lower and upper bounds of the interval.
+    """
+    mean = y_pred.mean()
+    std_dev = y_pred.std()
+    lower = mean - num_sigma * std_dev
+    upper = mean + num_sigma * std_dev
+    return lower.item(), upper.item()
+
+
+# ───── Extensions for 1 to 5 Sigmas ───── #
+
+def statistical__mod_pred__plus_minus_1_sigma(y_pred: torch.Tensor) -> tuple:
+    """Computes the interval for mean +/- 1 standard deviation."""
+    return statistical__mod_pred__plus_minus_sigma(y_pred, num_sigma=1)
+
+
+def statistical__mod_pred__plus_minus_2_sigma(y_pred: torch.Tensor) -> tuple:
+    """Computes the interval for mean +/- 2 standard deviations."""
+    return statistical__mod_pred__plus_minus_sigma(y_pred, num_sigma=2)
+
+
+def statistical__mod_pred__plus_minus_3_sigma(y_pred: torch.Tensor) -> tuple:
+    """Computes the interval for mean +/- 3 standard deviations."""
+    return statistical__mod_pred__plus_minus_sigma(y_pred, num_sigma=3)
+
+
+def statistical__mod_pred__plus_minus_4_sigma(y_pred: torch.Tensor) -> tuple:
+    """Computes the interval for mean +/- 4 standard deviations."""
+    return statistical__mod_pred__plus_minus_sigma(y_pred, num_sigma=4)
+
+
+def statistical__mod_pred__plus_minus_5_sigma(y_pred: torch.Tensor) -> tuple:
+    """Computes the interval for mean +/- 5 standard deviations."""
+    return statistical__mod_pred__plus_minus_sigma(y_pred, num_sigma=5)
+
+# ───── Statistical Functions: Real Data ───── #
+
+def statistical__real_data__mean(real_data: pd.Series) -> float:
+    """
+    Computes the statistical mean for the real data.
+    
+    Args:
+        real_data (pd.Series): Real data values from a column in a DataFrame.
+        
+    Returns:
+        float: The mean of the real data.
+    """
+    return real_data.mean()
+
+
+def statistical__real_data__variance_band(real_data: pd.Series) -> float:
+    """
+    Computes the variance-band for the real data.
+    
+    Args:
+        real_data (pd.Series): Real data values from a column in a DataFrame.
+        
+    Returns:
+        float: The variance of the real data.
+    """
+    return real_data.var()
+
+
+def statistical__real_data__standard_error(real_data: pd.Series) -> float:
+    """
+    Computes the standard error for the real data.
+    
+    Args:
+        real_data (pd.Series): Real data values from a column in a DataFrame.
+        
+    Returns:
+        float: The standard error of the real data.
+    """
+    return real_data.std() / (len(real_data) ** 0.5)
+
+
+def statistical__real_data__quantiles(real_data: pd.Series, quantiles: list = [0.25, 0.5, 0.75]) -> dict:
+    """
+    Computes the quantiles (e.g., 25th, 50th, 75th percentiles) for the real data.
+    
+    Args:
+        real_data (pd.Series): Real data values from a column in a DataFrame.
+        quantiles (list): List of quantiles to compute (default is [0.25, 0.5, 0.75]).
+        
+    Returns:
+        dict: Dictionary with quantiles as keys and their corresponding values.
+    """
+    quantile_values = {}
+    for q in quantiles:
+        quantile_values[f'quantile_{int(q*100)}'] = real_data.quantile(q)
+    return quantile_values
+
+
+def statistical__real_data__predictive_mean(real_data: pd.Series) -> float:
+    """
+    Computes the statistical predictive mean for the real data.
+    
+    Args:
+        real_data (pd.Series): Real data values from a column in a DataFrame.
+        
+    Returns:
+        float: The mean of the real data.
+    """
+    return real_data.mean()
+
+
+def statistical__real_data__plus_minus_sigma(real_data: pd.Series, num_sigma: int = 2) -> tuple:
+    """
+    Computes the interval defined by mean +/- num_sigma * standard deviation for real data.
+    
+    Args:
+        real_data (pd.Series): Real data values from a column in a DataFrame.
+        num_sigma (int): Number of standard deviations for the interval (default is 2).
+        
+    Returns:
+        tuple: Lower and upper bounds of the interval.
+    """
+    mean = real_data.mean()
+    std_dev = real_data.std()
+    lower = mean - num_sigma * std_dev
+    upper = mean + num_sigma * std_dev
+    return lower, upper
+
+
+# ───── Extensions for 1 to 5 Sigmas ───── #
+
+def statistical__real_data__plus_minus_1_sigma(real_data: pd.Series) -> tuple:
+    """Computes the interval for mean +/- 1 standard deviation for real data."""
+    return statistical__real_data__plus_minus_sigma(real_data, num_sigma=1)
+
+
+def statistical__real_data__plus_minus_2_sigma(real_data: pd.Series) -> tuple:
+    """Computes the interval for mean +/- 2 standard deviations for real data."""
+    return statistical__real_data__plus_minus_sigma(real_data, num_sigma=2)
+
+
+def statistical__real_data__plus_minus_3_sigma(real_data: pd.Series) -> tuple:
+    """Computes the interval for mean +/- 3 standard deviations for real data."""
+    return statistical__real_data__plus_minus_sigma(real_data, num_sigma=3)
+
+
+def statistical__real_data__plus_minus_4_sigma(real_data: pd.Series) -> tuple:
+    """Computes the interval for mean +/- 4 standard deviations for real data."""
+    return statistical__real_data__plus_minus_sigma(real_data, num_sigma=4)
+
+
+def statistical__real_data__plus_minus_5_sigma(real_data: pd.Series) -> tuple:
+    """Computes the interval for mean +/- 5 standard deviations for real data."""
+    return statistical__real_data__plus_minus_sigma(real_data, num_sigma=5)
+
+# ───── Metric Functions ───── #
 
 def top_k_accuracy(y_pred, y_true, k=3) -> float:
     """
