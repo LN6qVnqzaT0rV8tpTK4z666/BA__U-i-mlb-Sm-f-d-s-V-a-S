@@ -19,5 +19,13 @@
         "%DOC%"
       ]
     }
+  ],
+  "latex-workshop.latex.autoBuild.run": "onSave",
+  "latex-workshop.view.pdf.viewer": "tab",
+  "latex-workshop.view.pdf.onSuccess": true,
+  "latex-workshop.view.pdf.autoReload.enabled": true,
+  "latex-workshop.view.pdf.refocus": true
+  "python.analysis.extraPaths": [
+    "./BA__Projekt/assets/repos/BA__U-i-mlb-Sm-f-d-s-V-a-S__tex/prototypes/evidential-deep-learning"
   ]
 }

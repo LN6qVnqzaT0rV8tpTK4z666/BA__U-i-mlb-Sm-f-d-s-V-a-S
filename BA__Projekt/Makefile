@@ -56,6 +56,10 @@ build-training:
 		echo '==> Starting EDNN loss-visualization...' && \
 		cd ../viz/ && python3 viz__ednn_regression__iris.py"
 
+build-jupyter: 
+	@echo "==> Activate jupyter environment..."
+	@bash -c "jupyter lab /assets/repos/BA__U-i-mlb-Sm-f-d-s-V-a-S__tex/prototypes/jupyternotebook/a7.ipynb"
+
 check-all:
 	scripts/check__all.sh
 
@@ -120,3 +124,8 @@ init-local:
 
 ruff:
 	ruff check . --fix
+
+schreiben: 
+	bash -c "cd BA__Projekt/assets/repos/BA__U-i-mlb-Sm-f-d-s-V-a-S__tex/"
+	sleep 1s 
+	make clean

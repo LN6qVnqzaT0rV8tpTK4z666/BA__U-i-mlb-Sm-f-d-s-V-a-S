@@ -10,7 +10,8 @@ assets/dbs/*
 assets/logs/*
 assets/models/pth/*ednn_regression__*
 assets/notebooks/*
-assets/repos/BA__U-i-mlb-Sm-f-d-s-V-a-S__tex
+assets/repos/template-report-main/
+assets/repos/BA__U-i-mlb-Sm-f-d-s-V-a-S__tex/
 assets/repos/evidential-learning-pytorch
 assets/repos/industrialbenchmark
 assets/repos/MA_Uncertainty_in_ML_based_Surrogates
@@ -41,3 +42,8 @@ assets/viz/*
 **/**/models/model__evidential-learning-pytorch.py
 **/**/assets/data/README.md
 **/**/models/model__evidential-learning-pytorch.py
+#
+**/**/prototypes/evidential-deep-learning/*
+#!**/**/prototypes/prototype_s9-02-07-25/min_sensitivity_analysis_bnn.py
+#!**/**/prototypes/prototype_s9-02-07-25/min_sensitivity_analysis_enn.py
+#!**/**/prototypes/prototype_s9-02-07-25/min_sensitivity_analysis_cp.py

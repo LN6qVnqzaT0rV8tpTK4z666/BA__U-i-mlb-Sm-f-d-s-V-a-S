@@ -54,6 +54,12 @@ Build project without documentation.
 make build-develop
 ```
 
+Build project-summary in jupyter.
+
+```bash
+make build-jupyter
+```
+
 Optional: Visualize loss-training with TensorBoard or inspect `viz`.
 ```bash
 tensorboard --logdir /root/BA__U-i-mlb-Sm-f-d-s-V-a-S/BA__Projekt/data/processed/; http://localhost:6006
