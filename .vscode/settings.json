@@ -18,6 +18,17 @@
         "-output-directory=build",
         "%DOC%"
       ]
+    },
+    {
+      "name": "makeindex",
+      "command": "makeindex",
+      "args": [
+        "-s",
+        "nomencl.ist",
+        "-o",
+        "build/%DOCFILE%.nls",
+        "build/%DOCFILE%.nlo"
+      ]
     }
   ],
   "latex-workshop.latex.autoBuild.run": "onSave",
